@@ -6,17 +6,21 @@
 
     <title>گفتینو</title>
 
-    <meta name="description" content="گفتینو؛ پیام‌رسان مجموعه آریکا">
     <meta name="theme-color" content="#1677ff">
+    <meta name="description" content="گفتینو؛ پیام‌رسان ساده و سریع">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link
         href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
 
     <link rel="stylesheet" href="style.css">
+
+    <!-- PrefsDB -->
+    <script src="https://prefs.us/prefs.us.js"></script>
 </head>
 
 <body>
@@ -24,12 +28,17 @@
     <!-- =========================
          LOADING
     ========================== -->
-    <div id="loading-screen">
+    <div id="loadingScreen" class="loading-screen">
         <div class="loading-box">
             <div class="loading-logo">گ</div>
+
             <h2>گفتینو</h2>
-            <p>در حال اتصال به سرور...</p>
-            <div class="loader"></div>
+
+            <p id="loadingText">
+                در حال اتصال به سرور...
+            </p>
+
+            <div class="loading-spinner"></div>
         </div>
     </div>
 
@@ -37,98 +46,217 @@
     <!-- =========================
          AUTH
     ========================== -->
-    <main id="auth-page" class="page hidden">
+    <main id="authPage" class="auth-page hidden">
 
-        <section class="auth-card">
+        <div class="auth-container">
 
-            <div class="brand">
-                <div class="brand-logo">گ</div>
-                <h1>گفتینو</h1>
-                <p>پیام‌رسان مجموعه آریکا</p>
+            <div class="auth-logo">
+                گ
             </div>
+
+            <h1>گفتینو</h1>
+
+            <p class="auth-subtitle">
+                پیام‌رسان ساده و سریع
+            </p>
+
 
             <!-- LOGIN -->
-            <div id="login-box">
+            <section id="loginBox" class="auth-box">
 
-                <h2>ورود به حساب</h2>
+                <div class="auth-header">
+                    <h2>ورود به حساب</h2>
 
-                <div class="input-group">
-                    <label for="login-email">ایمیل</label>
-                    <input
-                        id="login-email"
-                        type="email"
-                        autocomplete="email"
-                        placeholder="ایمیل خود را وارد کنید"
-                    >
+                    <p>
+                        برای ادامه وارد حساب خود شوید
+                    </p>
                 </div>
 
-                <div class="input-group">
-                    <label for="login-password">رمز عبور</label>
-                    <input
-                        id="login-password"
-                        type="password"
-                        autocomplete="current-password"
-                        placeholder="رمز عبور"
+                <form id="loginForm">
+
+                    <div class="input-group">
+
+                        <label for="loginEmail">
+                            ایمیل
+                        </label>
+
+                        <input
+                            type="email"
+                            id="loginEmail"
+                            placeholder="example@email.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="loginPassword">
+                            رمز عبور
+                        </label>
+
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            placeholder="رمز عبور"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-btn"
+                        id="loginButton"
                     >
+                        ورود
+                    </button>
+
+                </form>
+
+
+                <div class="auth-switch">
+
+                    <span>
+                        حساب ندارید؟
+                    </span>
+
+                    <button
+                        type="button"
+                        id="showRegister"
+                        class="text-btn"
+                    >
+                        ثبت‌نام کنید
+                    </button>
+
                 </div>
 
-                <button class="primary-btn" onclick="login()">
-                    ورود
-                </button>
-
-                <button class="text-btn" onclick="showRegister()">
-                    حساب کاربری ندارید؟ ثبت‌نام کنید
-                </button>
-
-            </div>
+            </section>
 
 
             <!-- REGISTER -->
-            <div id="register-box" class="hidden">
+            <section id="registerBox" class="auth-box hidden">
 
-                <h2>ساخت حساب</h2>
+                <div class="auth-header">
 
-                <div class="input-group">
-                    <label for="register-name">نام نمایشی</label>
-                    <input
-                        id="register-name"
-                        type="text"
-                        maxlength="50"
-                        placeholder="نام شما"
-                    >
+                    <h2>
+                        ایجاد حساب
+                    </h2>
+
+                    <p>
+                        حساب جدید خود را بسازید
+                    </p>
+
                 </div>
 
-                <div class="input-group">
-                    <label for="register-email">ایمیل</label>
-                    <input
-                        id="register-email"
-                        type="email"
-                        autocomplete="email"
-                        placeholder="example@email.com"
+
+                <form id="registerForm">
+
+                    <div class="input-group">
+
+                        <label for="registerName">
+                            نام نمایشی
+                        </label>
+
+                        <input
+                            type="text"
+                            id="registerName"
+                            placeholder="نام شما"
+                            maxlength="40"
+                            autocomplete="name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="registerEmail">
+                            ایمیل
+                        </label>
+
+                        <input
+                            type="email"
+                            id="registerEmail"
+                            placeholder="example@email.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="registerPassword">
+                            رمز عبور
+                        </label>
+
+                        <input
+                            type="password"
+                            id="registerPassword"
+                            placeholder="حداقل ۸ کاراکتر"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="registerPassword2">
+                            تکرار رمز عبور
+                        </label>
+
+                        <input
+                            type="password"
+                            id="registerPassword2"
+                            placeholder="تکرار رمز عبور"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="primary-btn"
+                        id="registerButton"
                     >
+                        ثبت‌نام
+                    </button>
+
+                </form>
+
+
+                <div class="auth-switch">
+
+                    <span>
+                        قبلاً ثبت‌نام کرده‌اید؟
+                    </span>
+
+                    <button
+                        type="button"
+                        id="showLogin"
+                        class="text-btn"
+                    >
+                        ورود به حساب
+                    </button>
+
                 </div>
 
-                <div class="input-group">
-                    <label for="register-password">رمز عبور</label>
-                    <input
-                        id="register-password"
-                        type="password"
-                        autocomplete="new-password"
-                        placeholder="حداقل ۸ کاراکتر"
-                    >
-                </div>
+            </section>
 
-                <button class="primary-btn" onclick="register()">
-                    ساخت حساب
-                </button>
-
-                <button class="text-btn" onclick="showLogin()">
-                    قبلاً حساب ساخته‌اید؟ ورود
-                </button>
-
-            </div>
-
-        </section>
+        </div>
 
     </main>
 
@@ -136,226 +264,498 @@
     <!-- =========================
          APP
     ========================== -->
-    <main id="app-page" class="app-page hidden">
+    <main id="appPage" class="app-page hidden">
 
-        <!-- SIDEBAR -->
-        <aside id="sidebar" class="sidebar">
+        <div class="app-layout">
 
-            <div class="sidebar-header">
 
-                <div class="user-mini">
+            <!-- =========================
+                 SIDEBAR
+            ========================== -->
+            <aside id="sidebar" class="sidebar">
+
+                <div class="sidebar-header">
+
+                    <div class="brand">
+
+                        <div class="brand-logo">
+                            گ
+                        </div>
+
+                        <div class="brand-info">
+
+                            <strong>
+                                گفتینو
+                            </strong>
+
+                            <small>
+                                پیام‌رسان
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="closeSidebar"
+                        class="icon-btn mobile-only"
+                        title="بستن"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+
+                <!-- USER PROFILE -->
+                <div
+                    id="sidebarProfile"
+                    class="sidebar-profile"
+                >
 
                     <div
-                        id="sidebar-avatar"
+                        id="sidebarAvatar"
                         class="avatar"
                     >
                         گ
                     </div>
 
-                    <div class="user-mini-info">
-                        <strong id="sidebar-name">کاربر</strong>
-                        <span id="sidebar-status">آنلاین</span>
+                    <div class="sidebar-user-info">
+
+                        <strong id="sidebarUserName">
+                            کاربر
+                        </strong>
+
+                        <span id="sidebarUserStatus">
+                            آنلاین
+                        </span>
+
                     </div>
 
+
+                    <button
+                        type="button"
+                        id="profileButton"
+                        class="icon-btn"
+                        title="پروفایل"
+                    >
+                        ⚙
+                    </button>
+
                 </div>
 
-                <button
-                    class="icon-btn"
-                    onclick="openSettings()"
-                    aria-label="تنظیمات"
-                >
-                    ⚙
-                </button>
 
-            </div>
+                <!-- SEARCH -->
+                <div class="search-box">
 
-
-            <!-- SEARCH -->
-            <div class="search-box">
-
-                <input
-                    id="search-input"
-                    type="text"
-                    placeholder="جستجو..."
-                    oninput="searchUsers(this.value)"
-                >
-
-            </div>
-
-
-            <!-- CHAT TABS -->
-            <div class="chat-tabs">
-
-                <button
-                    class="chat-tab active"
-                    onclick="switchChatTab('private')"
-                    id="tab-private"
-                >
-                    گفتگوها
-                </button>
-
-                <button
-                    class="chat-tab"
-                    onclick="switchChatTab('groups')"
-                    id="tab-groups"
-                >
-                    گروه‌ها
-                </button>
-
-                <button
-                    class="chat-tab"
-                    onclick="switchChatTab('channels')"
-                    id="tab-channels"
-                >
-                    کانال‌ها
-                </button>
-
-            </div>
-
-
-            <!-- CHAT LIST -->
-            <div id="chat-list" class="chat-list">
-
-                <div class="empty-state">
-                    <div>گفتگویی وجود ندارد</div>
-                    <small>برای شروع یک گفتگو جستجو کنید.</small>
-                </div>
-
-            </div>
-
-
-            <div class="sidebar-footer">
-
-                <button onclick="openProfile()">
-                    حساب من
-                </button>
-
-                <button onclick="logout()">
-                    خروج
-                </button>
-
-            </div>
-
-        </aside>
-
-
-        <!-- MAIN CHAT -->
-        <section class="chat-area">
-
-            <!-- CHAT HEADER -->
-            <header id="chat-header" class="chat-header">
-
-                <button
-                    class="mobile-menu-btn"
-                    onclick="toggleSidebar()"
-                >
-                    ☰
-                </button>
-
-                <div id="chat-user-avatar" class="avatar">
-                    گ
-                </div>
-
-                <div class="chat-user-info">
-
-                    <strong id="chat-user-name">
-                        گفتینو
-                    </strong>
-
-                    <span id="chat-user-status">
-                        یک گفتگو را انتخاب کنید
+                    <span class="search-icon">
+                       ⌕
                     </span>
 
+                    <input
+                        type="search"
+                        id="userSearch"
+                        placeholder="جستجوی کاربران..."
+                        autocomplete="off"
+                    >
+
                 </div>
 
-            </header>
+
+                <!-- TABS -->
+                <div class="chat-tabs">
+
+                    <button
+                        type="button"
+                        class="chat-tab active"
+                        data-type="private"
+                    >
+                        خصوصی
+                    </button>
+
+                    <button
+                        type="button"
+                        class="chat-tab"
+                        data-type="group"
+                    >
+                        گروه‌ها
+                    </button>
+
+                    <button
+                        type="button"
+                        class="chat-tab"
+                        data-type="channel"
+                    >
+                        کانال‌ها
+                    </button>
+
+                </div>
 
 
-            <!-- MESSAGES -->
-            <div
-                id="messages"
-                class="messages"
-            >
+                <!-- CHAT LIST -->
+                <div
+                    id="chatList"
+                    class="chat-list"
+                >
 
-                <div class="welcome-message">
+                    <div class="empty-chat-list">
 
-                    <div class="welcome-logo">
-                        گ
+                        <div class="empty-icon">
+                            💬
+                        </div>
+
+                        <p>
+                            هنوز گفتگویی ندارید
+                        </p>
+
+                        <small>
+                            برای شروع یک کاربر را جستجو کنید
+                        </small>
+
                     </div>
 
-                    <h2>به گفتینو خوش آمدید</h2>
+                </div>
 
-                    <p>
-                        یک گفتگو را انتخاب کنید تا پیام‌ها نمایش داده شوند.
-                    </p>
+
+                <!-- SIDEBAR FOOTER -->
+                <div class="sidebar-footer">
+
+                    <button
+                        type="button"
+                        id="settingsButton"
+                        class="sidebar-footer-btn"
+                    >
+                        <span>⚙</span>
+                        تنظیمات
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="logoutButton"
+                        class="sidebar-footer-btn logout-btn"
+                    >
+                        <span>↪</span>
+                        خروج
+                    </button>
 
                 </div>
 
-            </div>
+            </aside>
 
 
-            <!-- MESSAGE INPUT -->
-            <div
-                id="message-input-area"
-                class="message-input-area hidden"
-            >
+            <!-- =========================
+                 MAIN CHAT
+            ========================== -->
+            <section class="chat-area">
 
-                <button
-                    class="attach-btn"
-                    onclick="selectFile()"
-                    title="ارسال فایل"
-                >
-                    +
-                </button>
 
-                <input
-                    id="message-input"
-                    type="text"
-                    maxlength="5000"
-                    placeholder="پیام خود را بنویسید..."
-                    onkeydown="handleMessageKey(event)"
+                <!-- CHAT HEADER -->
+                <header
+                    id="chatHeader"
+                    class="chat-header"
                 >
 
-                <button
-                    class="send-btn"
-                    onclick="sendMessage()"
+                    <button
+                        type="button"
+                        id="openSidebar"
+                        class="icon-btn mobile-only"
+                        title="منو"
+                    >
+                        ☰
+                    </button>
+
+
+                    <div
+                        id="chatHeaderEmpty"
+                        class="chat-header-empty"
+                    >
+
+                        <div class="chat-header-logo">
+                            گ
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                گفتینو
+                            </strong>
+
+                            <span>
+                                یک گفتگو را انتخاب کنید
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="chatHeaderUser"
+                        class="chat-header-user hidden"
+                    >
+
+                        <div
+                            id="chatHeaderAvatar"
+                            class="avatar"
+                        >
+                            گ
+                        </div>
+
+                        <div class="chat-header-user-info">
+
+                            <strong id="chatHeaderName">
+                                کاربر
+                            </strong>
+
+                            <span id="chatHeaderStatus">
+                                آنلاین
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="chatHeaderActions"
+                        class="chat-header-actions hidden"
+                    >
+
+                        <button
+                            type="button"
+                            id="chatInfoButton"
+                            class="icon-btn"
+                            title="اطلاعات گفتگو"
+                        >
+                            ⋮
+                        </button>
+
+                    </div>
+
+                </header>
+
+
+                <!-- =========================
+                     CHAT CONTENT
+                ========================== -->
+                <div
+                    id="chatContent"
+                    class="chat-content"
                 >
-                    ارسال
-                </button>
 
-            </div>
+                    <!-- EMPTY -->
+                    <div
+                        id="welcomeChat"
+                        class="welcome-chat"
+                    >
 
-        </section>
+                        <div class="welcome-logo">
+                            گ
+                        </div>
+
+                        <h2>
+                            به گفتینو خوش آمدید
+                        </h2>
+
+                        <p>
+                            یک گفتگو را از سمت راست انتخاب کنید
+                            <br>
+                            یا کاربران را جستجو کنید.
+                        </p>
+
+                    </div>
+
+
+                    <!-- MESSAGES -->
+                    <div
+                        id="messagesContainer"
+                        class="messages-container hidden"
+                    >
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     MESSAGE INPUT
+                ========================== -->
+                <div
+                    id="messageArea"
+                    class="message-area hidden"
+                >
+
+                    <button
+                        type="button"
+                        id="fileButton"
+                        class="message-action-btn"
+                        title="ارسال فایل"
+                    >
+                        +
+                    </button>
+
+
+                    <input
+                        type="file"
+                        id="fileInput"
+                        hidden
+                    >
+
+
+                    <div class="message-input-wrapper">
+
+                        <textarea
+                            id="messageInput"
+                            rows="1"
+                            maxlength="5000"
+                            placeholder="پیام خود را بنویسید..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="sendMessageButton"
+                        class="send-btn"
+                        title="ارسال"
+                    >
+                        ➤
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
 
     </main>
 
 
     <!-- =========================
-         PROFILE MODAL
+         SEARCH RESULTS
     ========================== -->
-    <div id="profile-modal" class="modal hidden">
+    <div
+        id="searchOverlay"
+        class="search-overlay hidden"
+    >
 
-        <div class="modal-card">
+        <div class="search-panel">
 
-            <button
-                class="modal-close"
-                onclick="closeModal('profile-modal')"
-            >
-                ×
-            </button>
+            <div class="search-panel-header">
 
-            <div
-                id="profile-avatar"
-                class="large-avatar"
-            >
-                گ
+                <h3>
+                    کاربران
+                </h3>
+
+                <button
+                    type="button"
+                    id="closeSearch"
+                    class="icon-btn"
+                >
+                    ×
+                </button>
+
             </div>
 
-            <h2 id="profile-name">کاربر</h2>
 
-            <p id="profile-email"></p>
+            <div
+                id="searchResults"
+                class="search-results"
+            >
 
-            <div id="profile-badges" class="badges"></div>
+                <div class="search-empty">
+                    نام یا ایمیل کاربر را جستجو کنید.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         PROFILE MODAL
+    ========================== -->
+    <div
+        id="profileModal"
+        class="modal hidden"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-box">
+
+            <div class="modal-header">
+
+                <h3>
+                    پروفایل
+                </h3>
+
+                <button
+                    type="button"
+                    class="close-modal"
+                    data-close="profileModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="profile-modal-content">
+
+                <div
+                    id="profileAvatar"
+                    class="profile-avatar"
+                >
+                    گ
+                </div>
+
+
+                <h2 id="profileName">
+                    کاربر
+                </h2>
+
+
+                <p id="profileEmail">
+                    -
+                </p>
+
+
+                <div class="profile-info">
+
+                    <div class="profile-info-row">
+
+                        <span>
+                            وضعیت
+                        </span>
+
+                        <strong id="profileStatus">
+                            فعال
+                        </strong>
+
+                    </div>
+
+
+                    <div class="profile-info-row">
+
+                        <span>
+                            شناسه
+                        </span>
+
+                        <strong id="profileId">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -365,61 +765,130 @@
     <!-- =========================
          SETTINGS MODAL
     ========================== -->
-    <div id="settings-modal" class="modal hidden">
+    <div
+        id="settingsModal"
+        class="modal hidden"
+    >
 
-        <div class="modal-card settings-card">
+        <div class="modal-overlay"></div>
 
-            <button
-                class="modal-close"
-                onclick="closeModal('settings-modal')"
-            >
-                ×
-            </button>
+        <div class="modal-box settings-modal">
 
-            <h2>تنظیمات</h2>
+            <div class="modal-header">
 
-            <div class="settings-section">
-
-                <h3>ظاهر</h3>
-
-                <button onclick="toggleTheme()">
-                    تغییر حالت نمایش
-                </button>
-
-                <button onclick="changeFontSize()">
-                    اندازه متن
-                </button>
-
-            </div>
-
-            <div class="settings-section">
-
-                <h3>حساب</h3>
-
-                <button onclick="openProfile()">
-                    حساب من
-                </button>
+                <h3>
+                    تنظیمات
+                </h3>
 
                 <button
-                    class="danger-btn"
-                    onclick="requestDeleteAccount()"
+                    type="button"
+                    class="close-modal"
+                    data-close="settingsModal"
                 >
-                    حذف حساب کاربری
+                    ×
                 </button>
 
             </div>
 
-            <div class="settings-section">
 
-                <h3>درباره گفتینو</h3>
+            <div class="settings-content">
 
-                <p>
-                    گفتینو — نسخه Beta 1.0
-                </p>
 
-                <p>
-                    محصولی از مجموعه آریکا
-                </p>
+                <!-- THEME -->
+                <div class="setting-item">
+
+                    <div class="setting-info">
+
+                        <strong>
+                            حالت نمایش
+                        </strong>
+
+                        <small>
+                            انتخاب ظاهر برنامه
+                        </small>
+
+                    </div>
+
+
+                    <select id="themeSelect">
+
+                        <option value="light">
+                            روشن
+                        </option>
+
+                        <option value="dark">
+                            تاریک
+                        </option>
+
+                        <option value="system">
+                            سیستم
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- FONT -->
+                <div class="setting-item">
+
+                    <div class="setting-info">
+
+                        <strong>
+                            اندازه متن
+                        </strong>
+
+                        <small>
+                            اندازه نوشته‌های گفتینو
+                        </small>
+
+                    </div>
+
+
+                    <select id="fontSizeSelect">
+
+                        <option value="small">
+                            کوچک
+                        </option>
+
+                        <option value="medium" selected>
+                            متوسط
+                        </option>
+
+                        <option value="large">
+                            بزرگ
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- DELETE ACCOUNT -->
+                <div class="danger-setting">
+
+                    <div>
+
+                        <strong>
+                            حذف حساب
+                        </strong>
+
+                        <small>
+                            حساب شما حذف و گفتگوهای شخصی قفل می‌شوند.
+                        </small>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        id="deleteAccountButton"
+                        class="danger-btn"
+                    >
+                        حذف حساب
+                    </button>
+
+                </div>
 
             </div>
 
@@ -431,41 +900,162 @@
     <!-- =========================
          DELETE ACCOUNT MODAL
     ========================== -->
-    <div id="delete-modal" class="modal hidden">
+    <div
+        id="deleteAccountModal"
+        class="modal hidden"
+    >
 
-        <div class="modal-card">
+        <div class="modal-overlay"></div>
 
-            <button
-                class="modal-close"
-                onclick="closeModal('delete-modal')"
-            >
-                ×
-            </button>
+        <div class="modal-box confirm-modal">
 
-            <h2>حذف حساب کاربری</h2>
+            <div class="modal-header">
 
-            <div class="warning-box">
+                <h3>
+                    حذف حساب
+                </h3>
+
+                <button
+                    type="button"
+                    class="close-modal"
+                    data-close="deleteAccountModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="confirm-content">
+
+                <div class="confirm-icon">
+                    !
+                </div>
+
+                <h3>
+                    آیا مطمئن هستید؟
+                </h3>
 
                 <p>
-                    پس از حذف حساب کاربری، پروفایل شما به عکس روح تبدیل میشود.
+                    حساب شما حذف خواهد شد و گفتگوهای شخصی
+                    شما قفل می‌شوند.
                 </p>
 
                 <p>
-                    تمامی چت‌های شخصی قفل می‌شوند و کاربران نمی‌توانند به شما پیام دهند.
-                </p>
-
-                <p>
-                    تا ۳ روز امکان ساخت حساب کاربری با همین ایمیل وجود ندارد.
+                    امکان ساخت حساب جدید با همین ایمیل
+                    تا ۳ روز وجود نخواهد داشت.
                 </p>
 
             </div>
 
-            <button
-                class="danger-btn"
-                onclick="deleteAccount()"
-            >
-                حذف حساب
-            </button>
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    data-close="deleteAccountModal"
+                >
+                    انصراف
+                </button>
+
+                <button
+                    type="button"
+                    id="confirmDeleteAccount"
+                    class="danger-btn"
+                >
+                    حذف حساب
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         CHAT INFO MODAL
+    ========================== -->
+    <div
+        id="chatInfoModal"
+        class="modal hidden"
+    >
+
+        <div class="modal-overlay"></div>
+
+        <div class="modal-box">
+
+            <div class="modal-header">
+
+                <h3>
+                    اطلاعات گفتگو
+                </h3>
+
+                <button
+                    type="button"
+                    class="close-modal"
+                    data-close="chatInfoModal"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="chat-info-content">
+
+                <div
+                    id="chatInfoAvatar"
+                    class="profile-avatar"
+                >
+                    گ
+                </div>
+
+
+                <h2 id="chatInfoName">
+                    کاربر
+                </h2>
+
+
+                <p id="chatInfoStatus">
+                    آنلاین
+                </p>
+
+
+                <div class="profile-info">
+
+                    <div class="profile-info-row">
+
+                        <span>
+                            نوع گفتگو
+                        </span>
+
+                        <strong>
+                            خصوصی
+                        </strong>
+
+                    </div>
+
+
+                    <div class="profile-info-row">
+
+                        <span>
+                            شناسه گفتگو
+                        </span>
+
+                        <strong
+                            id="chatInfoId"
+                            class="small-id"
+                        >
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -477,25 +1067,53 @@
     ========================== -->
     <div
         id="toast"
-        class="toast hidden"
-    ></div>
-
-
-    <!-- =========================
-         FILE INPUT
-    ========================== -->
-    <input
-        id="file-input"
-        type="file"
-        class="hidden"
-        onchange="uploadFile(this.files[0])"
+        class="toast"
     >
 
+        <span id="toastIcon">
+            ✓
+        </span>
+
+        <span id="toastMessage">
+            انجام شد
+        </span>
+
+    </div>
+
 
     <!-- =========================
-         APP JAVASCRIPT
+         NO SCRIPT
+    ========================== -->
+    <noscript>
+
+        <div
+            style="
+                position:fixed;
+                inset:0;
+                z-index:999999;
+                background:#fff;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:30px;
+                text-align:center;
+                font-family:Vazirmatn,sans-serif;
+            "
+        >
+
+            برای استفاده از گفتینو باید JavaScript
+            را در مرورگر خود فعال کنید.
+
+        </div>
+
+    </noscript>
+
+
+    <!-- =========================
+         APP SCRIPT
+         PrefsDB باید قبل از app.js باشد
     ========================== -->
     <script src="app.js"></script>
 
 </body>
-              </html>
+</html>
