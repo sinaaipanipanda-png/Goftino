@@ -2,15 +2,17 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>گفتینو</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
     <meta name="theme-color" content="#1677ff">
-    <meta name="description" content="گفتینو؛ پیام‌رسان ساده و سریع">
+
+    <title>گفتینو | پیام‌رسان آریکا</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
@@ -19,301 +21,878 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- PrefsDB -->
-    <script src="https://prefs.us/prefs.us.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: "Vazirmatn", sans-serif;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #loadingScreen {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #f5f8fc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loadingBox {
+            width: min(90%, 380px);
+            padding: 35px 25px;
+            text-align: center;
+        }
+
+        .loadingLogo {
+            width: 78px;
+            height: 78px;
+            margin: 0 auto 20px;
+            border-radius: 24px;
+            background: #1677ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            font-weight: 800;
+            box-shadow: 0 15px 35px rgba(22,119,255,.25);
+        }
+
+        .loadingSpinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid #dbe8ff;
+            border-top-color: #1677ff;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .authPage {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(22,119,255,.12),
+                    transparent 35%
+                ),
+                #f5f8fc;
+        }
+
+        .authCard {
+            width: min(100%, 430px);
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.08);
+        }
+
+        .authLogo {
+            width: 75px;
+            height: 75px;
+            border-radius: 22px;
+            background: #1677ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 auto 15px;
+        }
+
+        .authTitle {
+            text-align: center;
+            margin: 0;
+            font-size: 25px;
+        }
+
+        .authSubtitle {
+            text-align: center;
+            color: #7b8794;
+            margin: 8px 0 25px;
+        }
+
+        .formGroup {
+            margin-bottom: 15px;
+        }
+
+        .formGroup label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .formGroup input {
+            width: 100%;
+            height: 48px;
+            border: 1px solid #dce3ec;
+            border-radius: 13px;
+            padding: 0 15px;
+            font-family: inherit;
+            outline: none;
+            transition: .2s;
+            background: #fbfcfe;
+        }
+
+        .formGroup input:focus {
+            border-color: #1677ff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(22,119,255,.08);
+        }
+
+        .primaryButton {
+            width: 100%;
+            min-height: 48px;
+            border: 0;
+            border-radius: 13px;
+            background: #1677ff;
+            color: white;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .primaryButton:hover {
+            filter: brightness(.95);
+        }
+
+        .authSwitch {
+            text-align: center;
+            margin-top: 18px;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .authSwitch button {
+            border: 0;
+            background: none;
+            color: #1677ff;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        #appPage {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            background: #eef3f8;
+        }
+
+        .sidebar {
+            width: 340px;
+            min-width: 340px;
+            background: white;
+            border-left: 1px solid #e1e7ee;
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+        }
+
+        .sidebarTop {
+            padding: 18px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .profileRow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            border-radius: 50%;
+            background: #1677ff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .profileText {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .profileText strong {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profileText small {
+            color: #8a96a3;
+        }
+
+        .iconButton {
+            width: 40px;
+            height: 40px;
+            border: 0;
+            border-radius: 12px;
+            background: #f1f5f9;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .searchBox {
+            position: relative;
+        }
+
+        .searchBox input {
+            width: 100%;
+            height: 44px;
+            border: 0;
+            border-radius: 12px;
+            background: #f2f5f8;
+            padding: 0 14px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .tabButton {
+            flex: 1;
+            border: 0;
+            background: transparent;
+            padding: 13px 5px;
+            font-family: inherit;
+            color: #7d8792;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tabButton.active {
+            color: #1677ff;
+            border-bottom: 2px solid #1677ff;
+        }
+
+        .chatList {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chatItem {
+            padding: 13px 16px;
+            display: flex;
+            gap: 11px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .chatItem:hover,
+        .chatItem.active {
+            background: #f1f6ff;
+        }
+
+        .chatItemInfo {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .chatItemTop {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .chatItemName {
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chatItemTime {
+            color: #9ba5af;
+            font-size: 11px;
+        }
+
+        .chatPreview {
+            color: #8a949f;
+            font-size: 12px;
+            margin-top: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .emptyList {
+            padding: 35px 20px;
+            text-align: center;
+            color: #929ba5;
+            font-size: 14px;
+        }
+
+        .mainArea {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chatHeader {
+            height: 70px;
+            min-height: 70px;
+            background: white;
+            border-bottom: 1px solid #e1e7ee;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 12px;
+        }
+
+        .chatHeaderInfo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chatHeaderInfo strong {
+            display: block;
+        }
+
+        .chatHeaderInfo small {
+            color: #8b96a2;
+        }
+
+        .chatHeaderActions {
+            display: flex;
+            gap: 7px;
+        }
+
+        .chatBody {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcomeChat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #8b96a2;
+            padding: 30px;
+        }
+
+        .welcomeIcon {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 20px;
+            border-radius: 28px;
+            background: #dfeeff;
+            color: #1677ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .messagesContainer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .messageRow {
+            display: flex;
+        }
+
+        .messageRow.mine {
+            justify-content: flex-start;
+        }
+
+        .messageRow.theirs {
+            justify-content: flex-end;
+        }
+
+        .messageBubble {
+            max-width: min(70%, 550px);
+            padding: 9px 13px;
+            border-radius: 15px;
+            line-height: 1.8;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .mine .messageBubble {
+            background: #1677ff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .theirs .messageBubble {
+            background: white;
+            color: #222;
+            border: 1px solid #e3e8ee;
+            border-bottom-left-radius: 4px;
+        }
+
+        .messageTime {
+            display: block;
+            font-size: 9px;
+            opacity: .65;
+            margin-top: 2px;
+            text-align: left;
+        }
+
+        .messageArea {
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid #e1e7ee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .messageInput {
+            flex: 1;
+            border: 0;
+            outline: none;
+            background: #f2f5f8;
+            border-radius: 14px;
+            min-height: 45px;
+            max-height: 130px;
+            padding: 11px 14px;
+            font-family: inherit;
+            resize: none;
+        }
+
+        .sendButton {
+            width: 45px;
+            height: 45px;
+            border: 0;
+            border-radius: 14px;
+            background: #1677ff;
+            color: white;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .searchOverlay {
+            position: absolute;
+            top: 70px;
+            right: 0;
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border: 1px solid #e0e6ed;
+            box-shadow: 0 20px 50px rgba(0,0,0,.12);
+            z-index: 50;
+            border-radius: 0 0 16px 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .searchResult {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            cursor: pointer;
+        }
+
+        .searchResult:hover {
+            background: #f4f7fb;
+        }
+
+        .modalOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal {
+            width: min(100%, 450px);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,.25);
+        }
+
+        .modalHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modalHeader h3 {
+            margin: 0;
+        }
+
+        .modalClose {
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 10px;
+            background: #f2f4f6;
+            cursor: pointer;
+        }
+
+        .settingRow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #edf0f3;
+            gap: 15px;
+        }
+
+        .settingRow select {
+            min-width: 120px;
+            height: 38px;
+            border: 1px solid #dce2e8;
+            border-radius: 9px;
+            font-family: inherit;
+            padding: 0 8px;
+        }
+
+        .dangerButton {
+            width: 100%;
+            min-height: 45px;
+            margin-top: 20px;
+            border: 0;
+            border-radius: 12px;
+            background: #ef4444;
+            color: white;
+            font-family: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .profileBig {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profileBig .avatar {
+            width: 80px;
+            height: 80px;
+            margin: auto;
+            font-size: 30px;
+        }
+
+        .profileInfo {
+            padding: 13px;
+            background: #f5f7fa;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .profileInfo small {
+            color: #8a949f;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 25px;
+            transform: translate(-50%, 100px);
+            z-index: 99999;
+            min-width: 230px;
+            max-width: calc(100% - 30px);
+            background: #202832;
+            color: white;
+            padding: 13px 17px;
+            border-radius: 13px;
+            box-shadow: 0 15px 40px rgba(0,0,0,.2);
+            opacity: 0;
+            transition: .25s;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        @media (max-width: 750px) {
+            .sidebar {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            .sidebar.mobileHidden {
+                display: none;
+            }
+
+            .mainArea {
+                width: 100%;
+            }
+
+            .mainArea.mobileHidden {
+                display: none;
+            }
+
+            .chatHeader {
+                padding: 0 12px;
+            }
+
+            .messagesContainer {
+                padding: 12px;
+            }
+
+            .messageBubble {
+                max-width: 82%;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <!-- =========================
-         LOADING
-    ========================== -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-box">
-            <div class="loading-logo">گ</div>
+    <!-- Loading -->
+    <div id="loadingScreen">
+        <div class="loadingBox">
+            <div class="loadingLogo">گ</div>
 
             <h2>گفتینو</h2>
+
+            <div class="loadingSpinner"></div>
 
             <p id="loadingText">
                 در حال اتصال به سرور...
             </p>
-
-            <div class="loading-spinner"></div>
         </div>
     </div>
 
 
-    <!-- =========================
-         AUTH
-    ========================== -->
-    <main id="authPage" class="auth-page hidden">
+    <!-- Authentication -->
+    <section id="authPage" class="authPage hidden">
 
-        <div class="auth-container">
+        <div class="authCard">
 
-            <div class="auth-logo">
-                گ
-            </div>
+            <div class="authLogo">گ</div>
 
-            <h1>گفتینو</h1>
+            <h1 class="authTitle">
+                گفتینو
+            </h1>
 
-            <p class="auth-subtitle">
-                پیام‌رسان ساده و سریع
+            <p class="authSubtitle">
+                پیام‌رسان مجموعه آریکا
             </p>
 
 
-            <!-- LOGIN -->
-            <section id="loginBox" class="auth-box">
+            <!-- Login -->
 
-                <div class="auth-header">
-                    <h2>ورود به حساب</h2>
-
-                    <p>
-                        برای ادامه وارد حساب خود شوید
-                    </p>
-                </div>
+            <div id="loginBox">
 
                 <form id="loginForm">
 
-                    <div class="input-group">
-
-                        <label for="loginEmail">
+                    <div class="formGroup">
+                        <label>
                             ایمیل
                         </label>
 
                         <input
-                            type="email"
                             id="loginEmail"
-                            placeholder="example@email.com"
-                            autocomplete="email"
+                            type="email"
+                            autocomplete="off"
+                            spellcheck="false"
                             required
                         >
-
                     </div>
 
-
-                    <div class="input-group">
-
-                        <label for="loginPassword">
+                    <div class="formGroup">
+                        <label>
                             رمز عبور
                         </label>
 
                         <input
-                            type="password"
                             id="loginPassword"
-                            placeholder="رمز عبور"
-                            autocomplete="current-password"
+                            type="password"
+                            autocomplete="off"
                             required
                         >
-
                     </div>
 
-
                     <button
+                        class="primaryButton"
                         type="submit"
-                        class="primary-btn"
-                        id="loginButton"
                     >
-                        ورود
+                        ورود به گفتینو
                     </button>
 
                 </form>
 
-
-                <div class="auth-switch">
-
-                    <span>
-                        حساب ندارید؟
-                    </span>
+                <div class="authSwitch">
+                    حساب ندارید؟
 
                     <button
+                        id="showRegisterButton"
                         type="button"
-                        id="showRegister"
-                        class="text-btn"
                     >
                         ثبت‌نام کنید
                     </button>
-
                 </div>
 
-            </section>
+            </div>
 
 
-            <!-- REGISTER -->
-            <section id="registerBox" class="auth-box hidden">
+            <!-- Register -->
 
-                <div class="auth-header">
-
-                    <h2>
-                        ایجاد حساب
-                    </h2>
-
-                    <p>
-                        حساب جدید خود را بسازید
-                    </p>
-
-                </div>
-
+            <div
+                id="registerBox"
+                class="hidden"
+            >
 
                 <form id="registerForm">
 
-                    <div class="input-group">
-
-                        <label for="registerName">
-                            نام نمایشی
+                    <div class="formGroup">
+                        <label>
+                            نام شما
                         </label>
 
                         <input
-                            type="text"
                             id="registerName"
-                            placeholder="نام شما"
-                            maxlength="40"
-                            autocomplete="name"
+                            type="text"
+                            autocomplete="off"
                             required
+                            maxlength="40"
                         >
-
                     </div>
 
-
-                    <div class="input-group">
-
-                        <label for="registerEmail">
+                    <div class="formGroup">
+                        <label>
                             ایمیل
                         </label>
 
                         <input
-                            type="email"
                             id="registerEmail"
-                            placeholder="example@email.com"
-                            autocomplete="email"
+                            type="email"
+                            autocomplete="off"
+                            spellcheck="false"
                             required
                         >
-
                     </div>
 
-
-                    <div class="input-group">
-
-                        <label for="registerPassword">
+                    <div class="formGroup">
+                        <label>
                             رمز عبور
                         </label>
 
                         <input
-                            type="password"
                             id="registerPassword"
-                            placeholder="حداقل ۸ کاراکتر"
-                            minlength="8"
-                            autocomplete="new-password"
+                            type="password"
+                            autocomplete="off"
+                            minlength="4"
                             required
                         >
-
                     </div>
 
-
-                    <div class="input-group">
-
-                        <label for="registerPassword2">
+                    <div class="formGroup">
+                        <label>
                             تکرار رمز عبور
                         </label>
 
                         <input
-                            type="password"
                             id="registerPassword2"
-                            placeholder="تکرار رمز عبور"
-                            minlength="8"
-                            autocomplete="new-password"
+                            type="password"
+                            autocomplete="off"
+                            minlength="4"
                             required
                         >
-
                     </div>
 
-
                     <button
+                        class="primaryButton"
                         type="submit"
-                        class="primary-btn"
-                        id="registerButton"
                     >
-                        ثبت‌نام
+                        ساخت حساب
                     </button>
 
                 </form>
 
-
-                <div class="auth-switch">
-
-                    <span>
-                        قبلاً ثبت‌نام کرده‌اید؟
-                    </span>
+                <div class="authSwitch">
+                    قبلاً ثبت‌نام کرده‌اید؟
 
                     <button
+                        id="showLoginButton"
                         type="button"
-                        id="showLogin"
-                        class="text-btn"
                     >
-                        ورود به حساب
+                        ورود
                     </button>
-
                 </div>
 
-            </section>
+            </div>
 
         </div>
 
-    </main>
+    </section>
 
 
-    <!-- =========================
-         APP
-    ========================== -->
-    <main id="appPage" class="app-page hidden">
+    <!-- Main App -->
 
-        <div class="app-layout">
+    <section
+        id="appPage"
+        class="hidden"
+    >
 
+        <!-- Sidebar -->
 
-            <!-- =========================
-                 SIDEBAR
-            ========================== -->
-            <aside id="sidebar" class="sidebar">
+        <aside
+            id="sidebar"
+            class="sidebar"
+        >
 
-                <div class="sidebar-header">
+            <div class="sidebarTop">
 
-                    <div class="brand">
-
-                        <div class="brand-logo">
-                            گ
-                        </div>
-
-                        <div class="brand-info">
-
-                            <strong>
-                                گفتینو
-                            </strong>
-
-                            <small>
-                                پیام‌رسان
-                            </small>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        id="closeSidebar"
-                        class="icon-btn mobile-only"
-                        title="بستن"
-                    >
-                        ×
-                    </button>
-
-                </div>
-
-
-                <!-- USER PROFILE -->
-                <div
-                    id="sidebarProfile"
-                    class="sidebar-profile"
-                >
+                <div class="profileRow">
 
                     <div
                         id="sidebarAvatar"
@@ -322,24 +901,30 @@
                         گ
                     </div>
 
-                    <div class="sidebar-user-info">
+                    <div class="profileText">
 
                         <strong id="sidebarUserName">
                             کاربر
                         </strong>
 
-                        <span id="sidebarUserStatus">
+                        <small>
                             آنلاین
-                        </span>
+                        </small>
 
                     </div>
 
+                    <button
+                        id="profileButton"
+                        class="iconButton"
+                        title="پروفایل"
+                    >
+                        ●
+                    </button>
 
                     <button
-                        type="button"
-                        id="profileButton"
-                        class="icon-btn"
-                        title="پروفایل"
+                        id="settingsButton"
+                        class="iconButton"
+                        title="تنظیمات"
                     >
                         ⚙
                     </button>
@@ -347,212 +932,162 @@
                 </div>
 
 
-                <!-- SEARCH -->
-                <div class="search-box">
-
-                    <span class="search-icon">
-                       ⌕
-                    </span>
+                <div class="searchBox">
 
                     <input
-                        type="search"
                         id="userSearch"
+                        type="search"
                         placeholder="جستجوی کاربران..."
                         autocomplete="off"
                     >
 
                 </div>
 
-
-                <!-- TABS -->
-                <div class="chat-tabs">
-
-                    <button
-                        type="button"
-                        class="chat-tab active"
-                        data-type="private"
-                    >
-                        خصوصی
-                    </button>
-
-                    <button
-                        type="button"
-                        class="chat-tab"
-                        data-type="group"
-                    >
-                        گروه‌ها
-                    </button>
-
-                    <button
-                        type="button"
-                        class="chat-tab"
-                        data-type="channel"
-                    >
-                        کانال‌ها
-                    </button>
-
-                </div>
+            </div>
 
 
-                <!-- CHAT LIST -->
+            <div class="tabs">
+
+                <button
+                    class="tabButton active"
+                    data-tab="private"
+                    type="button"
+                >
+                    گفتگوها
+                </button>
+
+                <button
+                    class="tabButton"
+                    data-tab="groups"
+                    type="button"
+                >
+                    گروه‌ها
+                </button>
+
+                <button
+                    class="tabButton"
+                    data-tab="channels"
+                    type="button"
+                >
+                    کانال‌ها
+                </button>
+
+            </div>
+
+
+            <div
+                id="chatList"
+                class="chatList"
+            ></div>
+
+
+            <div
+                id="searchOverlay"
+                class="searchOverlay hidden"
+            >
                 <div
-                    id="chatList"
-                    class="chat-list"
-                >
+                    id="searchResults"
+                ></div>
+            </div>
 
-                    <div class="empty-chat-list">
+        </aside>
 
-                        <div class="empty-icon">
-                            💬
-                        </div>
 
-                        <p>
-                            هنوز گفتگویی ندارید
-                        </p>
+        <!-- Main -->
 
-                        <small>
-                            برای شروع یک کاربر را جستجو کنید
-                        </small>
+        <main
+            id="mainArea"
+            class="mainArea"
+        >
 
-                    </div>
+            <!-- Empty Header -->
 
+            <header
+                id="chatHeaderEmpty"
+                class="chatHeader"
+            >
+
+                <div>
+                    <strong>
+                        گفتینو
+                    </strong>
+
+                    <small>
+                        پیام‌رسان آریکا
+                    </small>
                 </div>
 
-
-                <!-- SIDEBAR FOOTER -->
-                <div class="sidebar-footer">
-
-                    <button
-                        type="button"
-                        id="settingsButton"
-                        class="sidebar-footer-btn"
-                    >
-                        <span>⚙</span>
-                        تنظیمات
-                    </button>
+            </header>
 
 
-                    <button
-                        type="button"
-                        id="logoutButton"
-                        class="sidebar-footer-btn logout-btn"
-                    >
-                        <span>↪</span>
-                        خروج
-                    </button>
+            <!-- User Header -->
 
-                </div>
+            <header
+                id="chatHeaderUser"
+                class="chatHeader hidden"
+            >
 
-            </aside>
-
-
-            <!-- =========================
-                 MAIN CHAT
-            ========================== -->
-            <section class="chat-area">
-
-
-                <!-- CHAT HEADER -->
-                <header
-                    id="chatHeader"
-                    class="chat-header"
+                <button
+                    id="backToSidebarButton"
+                    class="iconButton"
+                    type="button"
                 >
+                    ‹
+                </button>
 
-                    <button
-                        type="button"
-                        id="openSidebar"
-                        class="icon-btn mobile-only"
-                        title="منو"
-                    >
-                        ☰
-                    </button>
-
-
-                    <div
-                        id="chatHeaderEmpty"
-                        class="chat-header-empty"
-                    >
-
-                        <div class="chat-header-logo">
-                            گ
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                گفتینو
-                            </strong>
-
-                            <span>
-                                یک گفتگو را انتخاب کنید
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        id="chatHeaderUser"
-                        class="chat-header-user hidden"
-                    >
-
-                        <div
-                            id="chatHeaderAvatar"
-                            class="avatar"
-                        >
-                            گ
-                        </div>
-
-                        <div class="chat-header-user-info">
-
-                            <strong id="chatHeaderName">
-                                کاربر
-                            </strong>
-
-                            <span id="chatHeaderStatus">
-                                آنلاین
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        id="chatHeaderActions"
-                        class="chat-header-actions hidden"
-                    >
-
-                        <button
-                            type="button"
-                            id="chatInfoButton"
-                            class="icon-btn"
-                            title="اطلاعات گفتگو"
-                        >
-                            ⋮
-                        </button>
-
-                    </div>
-
-                </header>
-
-
-                <!-- =========================
-                     CHAT CONTENT
-                ========================== -->
                 <div
-                    id="chatContent"
-                    class="chat-content"
+                    id="chatHeaderAvatar"
+                    class="avatar"
+                >
+                    گ
+                </div>
+
+                <div class="chatHeaderInfo">
+
+                    <strong
+                        id="chatHeaderName"
+                    >
+                        کاربر
+                    </strong>
+
+                    <small
+                        id="chatHeaderStatus"
+                    >
+                        آنلاین
+                    </small>
+
+                </div>
+
+                <div
+                    id="chatHeaderActions"
+                    class="chatHeaderActions"
                 >
 
-                    <!-- EMPTY -->
-                    <div
-                        id="welcomeChat"
-                        class="welcome-chat"
+                    <button
+                        id="chatInfoButton"
+                        class="iconButton"
+                        type="button"
                     >
+                        i
+                    </button>
 
-                        <div class="welcome-logo">
+                </div>
+
+            </header>
+
+
+            <div class="chatBody">
+
+                <!-- Welcome -->
+
+                <div
+                    id="welcomeChat"
+                    class="welcomeChat"
+                >
+
+                    <div>
+
+                        <div class="welcomeIcon">
                             گ
                         </div>
 
@@ -561,558 +1096,363 @@
                         </h2>
 
                         <p>
-                            یک گفتگو را از سمت راست انتخاب کنید
-                            <br>
-                            یا کاربران را جستجو کنید.
+                            یک کاربر را جستجو کنید
+                            و گفتگوی خود را شروع کنید.
                         </p>
 
-                    </div>
-
-
-                    <!-- MESSAGES -->
-                    <div
-                        id="messagesContainer"
-                        class="messages-container hidden"
-                    >
                     </div>
 
                 </div>
 
 
-                <!-- =========================
-                     MESSAGE INPUT
-                ========================== -->
+                <!-- Messages -->
+
+                <div
+                    id="messagesContainer"
+                    class="messagesContainer hidden"
+                ></div>
+
+
+                <!-- Message Input -->
+
                 <div
                     id="messageArea"
-                    class="message-area hidden"
+                    class="messageArea hidden"
                 >
 
                     <button
-                        type="button"
                         id="fileButton"
-                        class="message-action-btn"
+                        class="iconButton"
+                        type="button"
                         title="ارسال فایل"
                     >
                         +
                     </button>
 
-
                     <input
-                        type="file"
                         id="fileInput"
-                        hidden
+                        type="file"
+                        class="hidden"
                     >
 
-
-                    <div class="message-input-wrapper">
-
-                        <textarea
-                            id="messageInput"
-                            rows="1"
-                            maxlength="5000"
-                            placeholder="پیام خود را بنویسید..."
-                        ></textarea>
-
-                    </div>
-
+                    <textarea
+                        id="messageInput"
+                        class="messageInput"
+                        rows="1"
+                        placeholder="پیام خود را بنویسید..."
+                    ></textarea>
 
                     <button
-                        type="button"
                         id="sendMessageButton"
-                        class="send-btn"
-                        title="ارسال"
+                        class="sendButton"
+                        type="button"
                     >
                         ➤
                     </button>
 
                 </div>
 
-            </section>
-
-        </div>
-
-    </main>
-
-
-    <!-- =========================
-         SEARCH RESULTS
-    ========================== -->
-    <div
-        id="searchOverlay"
-        class="search-overlay hidden"
-    >
-
-        <div class="search-panel">
-
-            <div class="search-panel-header">
-
-                <h3>
-                    کاربران
-                </h3>
-
-                <button
-                    type="button"
-                    id="closeSearch"
-                    class="icon-btn"
-                >
-                    ×
-                </button>
-
             </div>
 
+        </main>
 
-            <div
-                id="searchResults"
-                class="search-results"
-            >
-
-                <div class="search-empty">
-                    نام یا ایمیل کاربر را جستجو کنید.
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
+    </section>
 
 
-    <!-- =========================
-         PROFILE MODAL
-    ========================== -->
+    <!-- Profile Modal -->
+
     <div
         id="profileModal"
-        class="modal hidden"
+        class="modalOverlay hidden"
     >
 
-        <div class="modal-overlay"></div>
+        <div class="modal">
 
-        <div class="modal-box">
-
-            <div class="modal-header">
+            <div class="modalHeader">
 
                 <h3>
-                    پروفایل
+                    پروفایل من
                 </h3>
 
                 <button
+                    class="modalClose"
+                    data-close-modal="profileModal"
                     type="button"
-                    class="close-modal"
-                    data-close="profileModal"
                 >
                     ×
                 </button>
 
             </div>
 
-
-            <div class="profile-modal-content">
+            <div class="profileBig">
 
                 <div
                     id="profileAvatar"
-                    class="profile-avatar"
+                    class="avatar"
                 >
                     گ
                 </div>
 
-
-                <h2 id="profileName">
+                <h3
+                    id="profileName"
+                >
                     کاربر
-                </h2>
-
-
-                <p id="profileEmail">
-                    -
-                </p>
-
-
-                <div class="profile-info">
-
-                    <div class="profile-info-row">
-
-                        <span>
-                            وضعیت
-                        </span>
-
-                        <strong id="profileStatus">
-                            فعال
-                        </strong>
-
-                    </div>
-
-
-                    <div class="profile-info-row">
-
-                        <span>
-                            شناسه
-                        </span>
-
-                        <strong id="profileId">
-                            -
-                        </strong>
-
-                    </div>
-
-                </div>
+                </h3>
 
             </div>
+
+            <div class="profileInfo">
+
+                <small>
+                    ایمیل
+                </small>
+
+                <span
+                    id="profileEmail"
+                >
+                    -
+                </span>
+
+            </div>
+
+            <div class="profileInfo">
+
+                <small>
+                    شناسه کاربری
+                </small>
+
+                <span
+                    id="profileId"
+                >
+                    -
+                </span>
+
+            </div>
+
+            <div class="profileInfo">
+
+                <small>
+                    وضعیت
+                </small>
+
+                <span
+                    id="profileStatus"
+                >
+                    فعال
+                </span>
+
+            </div>
+
+            <button
+                id="logoutButton"
+                class="dangerButton"
+                type="button"
+            >
+                خروج از حساب
+            </button>
 
         </div>
 
     </div>
 
 
-    <!-- =========================
-         SETTINGS MODAL
-    ========================== -->
+    <!-- Settings Modal -->
+
     <div
         id="settingsModal"
-        class="modal hidden"
+        class="modalOverlay hidden"
     >
 
-        <div class="modal-overlay"></div>
+        <div class="modal">
 
-        <div class="modal-box settings-modal">
-
-            <div class="modal-header">
+            <div class="modalHeader">
 
                 <h3>
                     تنظیمات
                 </h3>
 
                 <button
+                    class="modalClose"
+                    data-close-modal="settingsModal"
                     type="button"
-                    class="close-modal"
-                    data-close="settingsModal"
                 >
                     ×
                 </button>
 
             </div>
 
+            <div class="settingRow">
 
-            <div class="settings-content">
-
-
-                <!-- THEME -->
-                <div class="setting-item">
-
-                    <div class="setting-info">
-
-                        <strong>
-                            حالت نمایش
-                        </strong>
-
-                        <small>
-                            انتخاب ظاهر برنامه
-                        </small>
-
-                    </div>
-
-
-                    <select id="themeSelect">
-
-                        <option value="light">
-                            روشن
-                        </option>
-
-                        <option value="dark">
-                            تاریک
-                        </option>
-
-                        <option value="system">
-                            سیستم
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- FONT -->
-                <div class="setting-item">
-
-                    <div class="setting-info">
-
-                        <strong>
-                            اندازه متن
-                        </strong>
-
-                        <small>
-                            اندازه نوشته‌های گفتینو
-                        </small>
-
-                    </div>
-
-
-                    <select id="fontSizeSelect">
-
-                        <option value="small">
-                            کوچک
-                        </option>
-
-                        <option value="medium" selected>
-                            متوسط
-                        </option>
-
-                        <option value="large">
-                            بزرگ
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- DELETE ACCOUNT -->
-                <div class="danger-setting">
+                <div>
+                    <strong>
+                        ظاهر
+                    </strong>
 
                     <div>
-
-                        <strong>
-                            حذف حساب
-                        </strong>
-
-                        <small>
-                            حساب شما حذف و گفتگوهای شخصی قفل می‌شوند.
-                        </small>
-
+                        حالت نمایش
                     </div>
-
-
-                    <button
-                        type="button"
-                        id="deleteAccountButton"
-                        class="danger-btn"
-                    >
-                        حذف حساب
-                    </button>
-
                 </div>
 
+                <select id="themeSelect">
+
+                    <option value="light">
+                        روشن
+                    </option>
+
+                    <option value="dark">
+                        تیره
+                    </option>
+
+                </select>
+
             </div>
+
+
+            <div class="settingRow">
+
+                <div>
+                    <strong>
+                        اندازه متن
+                    </strong>
+                </div>
+
+                <select id="fontSizeSelect">
+
+                    <option value="small">
+                        کوچک
+                    </option>
+
+                    <option value="normal">
+                        معمولی
+                    </option>
+
+                    <option value="large">
+                        بزرگ
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                id="deleteAccountButton"
+                class="dangerButton"
+                type="button"
+            >
+                حذف حساب
+            </button>
 
         </div>
 
     </div>
 
 
-    <!-- =========================
-         DELETE ACCOUNT MODAL
-    ========================== -->
+    <!-- Delete Account -->
+
     <div
         id="deleteAccountModal"
-        class="modal hidden"
+        class="modalOverlay hidden"
     >
 
-        <div class="modal-overlay"></div>
+        <div class="modal">
 
-        <div class="modal-box confirm-modal">
-
-            <div class="modal-header">
+            <div class="modalHeader">
 
                 <h3>
                     حذف حساب
                 </h3>
 
                 <button
+                    class="modalClose"
+                    data-close-modal="deleteAccountModal"
                     type="button"
-                    class="close-modal"
-                    data-close="deleteAccountModal"
                 >
                     ×
                 </button>
 
             </div>
 
+            <p>
+                آیا مطمئن هستید که می‌خواهید حساب
+                خود را حذف کنید؟
+            </p>
 
-            <div class="confirm-content">
+            <p>
+                این عملیات قابل بازگشت نیست.
+            </p>
 
-                <div class="confirm-icon">
-                    !
-                </div>
-
-                <h3>
-                    آیا مطمئن هستید؟
-                </h3>
-
-                <p>
-                    حساب شما حذف خواهد شد و گفتگوهای شخصی
-                    شما قفل می‌شوند.
-                </p>
-
-                <p>
-                    امکان ساخت حساب جدید با همین ایمیل
-                    تا ۳ روز وجود نخواهد داشت.
-                </p>
-
-            </div>
-
-
-            <div class="modal-actions">
-
-                <button
-                    type="button"
-                    class="secondary-btn"
-                    data-close="deleteAccountModal"
-                >
-                    انصراف
-                </button>
-
-                <button
-                    type="button"
-                    id="confirmDeleteAccount"
-                    class="danger-btn"
-                >
-                    حذف حساب
-                </button>
-
-            </div>
+            <button
+                id="confirmDeleteAccount"
+                class="dangerButton"
+                type="button"
+            >
+                بله، حسابم را حذف کن
+            </button>
 
         </div>
 
     </div>
 
 
-    <!-- =========================
-         CHAT INFO MODAL
-    ========================== -->
+    <!-- Chat Info -->
+
     <div
         id="chatInfoModal"
-        class="modal hidden"
+        class="modalOverlay hidden"
     >
 
-        <div class="modal-overlay"></div>
+        <div class="modal">
 
-        <div class="modal-box">
-
-            <div class="modal-header">
+            <div class="modalHeader">
 
                 <h3>
                     اطلاعات گفتگو
                 </h3>
 
                 <button
+                    class="modalClose"
+                    data-close-modal="chatInfoModal"
                     type="button"
-                    class="close-modal"
-                    data-close="chatInfoModal"
                 >
                     ×
                 </button>
 
             </div>
 
-
-            <div class="chat-info-content">
-
-                <div
-                    id="chatInfoAvatar"
-                    class="profile-avatar"
-                >
-                    گ
-                </div>
-
-
-                <h2 id="chatInfoName">
-                    کاربر
-                </h2>
-
-
-                <p id="chatInfoStatus">
-                    آنلاین
-                </p>
-
-
-                <div class="profile-info">
-
-                    <div class="profile-info-row">
-
-                        <span>
-                            نوع گفتگو
-                        </span>
-
-                        <strong>
-                            خصوصی
-                        </strong>
-
-                    </div>
-
-
-                    <div class="profile-info-row">
-
-                        <span>
-                            شناسه گفتگو
-                        </span>
-
-                        <strong
-                            id="chatInfoId"
-                            class="small-id"
-                        >
-                            -
-                        </strong>
-
-                    </div>
-
-                </div>
-
-            </div>
+            <div
+                id="chatInfoContent"
+            ></div>
 
         </div>
 
     </div>
 
 
-    <!-- =========================
-         TOAST
-    ========================== -->
-    <div
-        id="toast"
-        class="toast"
-    >
+    <!-- Toast -->
+
+    <div id="toast">
 
         <span id="toastIcon">
-            ✓
+            i
         </span>
 
         <span id="toastMessage">
-            انجام شد
+            پیام
         </span>
 
     </div>
 
 
-    <!-- =========================
-         NO SCRIPT
-    ========================== -->
-    <noscript>
+    <!--
+        مهم:
+        PrefsDB باید قبل از app.js لود شود.
+    -->
 
-        <div
-            style="
-                position:fixed;
-                inset:0;
-                z-index:999999;
-                background:#fff;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                padding:30px;
-                text-align:center;
-                font-family:Vazirmatn,sans-serif;
-            "
-        >
+    <script
+        src="https://prefs.us/prefs.us.js"
+    ></script>
 
-            برای استفاده از گفتینو باید JavaScript
-            را در مرورگر خود فعال کنید.
-
-        </div>
-
-    </noscript>
-
-
-    <!-- =========================
-         APP SCRIPT
-         PrefsDB باید قبل از app.js باشد
-    ========================== -->
     <script src="app.js"></script>
 
 </body>
