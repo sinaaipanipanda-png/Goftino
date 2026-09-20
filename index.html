@@ -2,22 +2,15 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
-
-    <meta name="theme-color" content="#1677ff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>گفتینو | پیام‌رسان آریکا</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <meta name="description" content="گفتینو؛ پیام‌رسان ساده و سریع مجموعه آریکا">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="style.css">
 
@@ -31,56 +24,70 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
         }
 
         body {
             font-family: "Vazirmatn", sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font-family: inherit;
+        }
+
+        button {
+            cursor: pointer;
         }
 
         .hidden {
             display: none !important;
         }
 
+        /* Loading */
+
         #loadingScreen {
             position: fixed;
             inset: 0;
             z-index: 99999;
-            background: #f5f8fc;
+            background: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
+            gap: 18px;
         }
 
-        .loadingBox {
-            width: min(90%, 380px);
-            padding: 35px 25px;
-            text-align: center;
-        }
-
-        .loadingLogo {
-            width: 78px;
-            height: 78px;
-            margin: 0 auto 20px;
-            border-radius: 24px;
+        #loadingScreen .loading-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
             background: #1677ff;
-            color: white;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 35px;
+            font-size: 30px;
             font-weight: 800;
-            box-shadow: 0 15px 35px rgba(22,119,255,.25);
+            box-shadow: 0 10px 30px rgba(22, 119, 255, .25);
         }
 
-        .loadingSpinner {
-            width: 34px;
-            height: 34px;
-            border: 3px solid #dbe8ff;
+        #loadingText {
+            color: #667085;
+            font-size: 14px;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e6eaf0;
             border-top-color: #1677ff;
             border-radius: 50%;
             animation: spin .8s linear infinite;
-            margin: 20px auto;
         }
 
         @keyframes spin {
@@ -89,607 +96,698 @@
             }
         }
 
-        .authPage {
+        /* Auth */
+
+        #authPage {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 25px;
             background:
-                radial-gradient(
-                    circle at top right,
-                    rgba(22,119,255,.12),
-                    transparent 35%
-                ),
-                #f5f8fc;
+                radial-gradient(circle at top right, rgba(22,119,255,.12), transparent 35%),
+                #f5f7fb;
         }
 
-        .authCard {
-            width: min(100%, 430px);
-            background: white;
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.08);
+        .auth-container {
+            width: 100%;
+            max-width: 430px;
         }
 
-        .authLogo {
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-logo-icon {
             width: 75px;
             height: 75px;
-            border-radius: 22px;
+            margin: 0 auto 14px;
+            border-radius: 24px;
             background: #1677ff;
-            color: white;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 800;
-            margin: 0 auto 15px;
+            box-shadow: 0 12px 30px rgba(22,119,255,.25);
         }
 
-        .authTitle {
-            text-align: center;
+        .auth-logo h1 {
             margin: 0;
-            font-size: 25px;
+            font-size: 27px;
         }
 
-        .authSubtitle {
-            text-align: center;
-            color: #7b8794;
-            margin: 8px 0 25px;
+        .auth-logo p {
+            margin: 7px 0 0;
+            color: #7b8494;
+            font-size: 13px;
         }
 
-        .formGroup {
+        .auth-box {
+            background: #fff;
+            border: 1px solid #e7ebf1;
+            border-radius: 22px;
+            padding: 28px;
+            box-shadow: 0 15px 45px rgba(20, 30, 50, .08);
+        }
+
+        .auth-box h2 {
+            margin: 0 0 7px;
+            font-size: 21px;
+        }
+
+        .auth-description {
+            margin: 0 0 22px;
+            color: #7b8494;
+            font-size: 13px;
+        }
+
+        .form-group {
             margin-bottom: 15px;
         }
 
-        .formGroup label {
+        .form-group label {
             display: block;
             margin-bottom: 7px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
         }
 
-        .formGroup input {
+        .form-group input,
+        .settings-select {
             width: 100%;
-            height: 48px;
-            border: 1px solid #dce3ec;
-            border-radius: 13px;
-            padding: 0 15px;
-            font-family: inherit;
+            border: 1px solid #dfe4ec;
             outline: none;
+            border-radius: 12px;
+            padding: 12px 13px;
+            background: #fff;
+            color: #172033;
             transition: .2s;
-            background: #fbfcfe;
         }
 
-        .formGroup input:focus {
+        .form-group input:focus,
+        .settings-select:focus {
             border-color: #1677ff;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(22,119,255,.08);
+            box-shadow: 0 0 0 3px rgba(22,119,255,.1);
         }
 
-        .primaryButton {
+        .primary-button {
             width: 100%;
-            min-height: 48px;
-            border: 0;
-            border-radius: 13px;
+            border: none;
+            border-radius: 12px;
+            padding: 13px;
             background: #1677ff;
-            color: white;
-            font-family: inherit;
+            color: #fff;
             font-weight: 700;
-            cursor: pointer;
+            font-size: 14px;
             transition: .2s;
         }
 
-        .primaryButton:hover {
-            filter: brightness(.95);
+        .primary-button:hover {
+            background: #0868e8;
         }
 
-        .authSwitch {
+        .auth-switch {
             text-align: center;
             margin-top: 18px;
-            color: #777;
-            font-size: 14px;
+            font-size: 13px;
+            color: #7b8494;
         }
 
-        .authSwitch button {
-            border: 0;
-            background: none;
+        .auth-switch button {
+            border: none;
+            background: transparent;
             color: #1677ff;
-            font-family: inherit;
             font-weight: 700;
-            cursor: pointer;
         }
+
+        /* App */
 
         #appPage {
-            width: 100%;
             height: 100vh;
-            overflow: hidden;
             display: flex;
-            background: #eef3f8;
+            overflow: hidden;
+            background: #fff;
         }
 
-        .sidebar {
-            width: 340px;
-            min-width: 340px;
-            background: white;
-            border-left: 1px solid #e1e7ee;
+        #sidebar {
+            width: 350px;
+            flex-shrink: 0;
+            border-left: 1px solid #e8ecf2;
+            background: #fff;
             display: flex;
             flex-direction: column;
-            z-index: 20;
         }
 
-        .sidebarTop {
-            padding: 18px;
+        .sidebar-top {
+            padding: 17px;
             border-bottom: 1px solid #edf0f4;
         }
 
-        .profileRow {
+        .sidebar-profile {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 11px;
+            margin-bottom: 15px;
         }
 
         .avatar {
-            width: 46px;
-            height: 46px;
-            min-width: 46px;
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
             border-radius: 50%;
             background: #1677ff;
-            color: white;
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
         }
 
-        .profileText {
-            flex: 1;
-            min-width: 0;
+        .avatar.small {
+            width: 40px;
+            height: 40px;
         }
 
-        .profileText strong {
+        .sidebar-user-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .sidebar-user-info strong {
             display: block;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
-        .profileText small {
-            color: #8a96a3;
+        .sidebar-user-info span {
+            display: block;
+            color: #8a93a3;
+            font-size: 12px;
+            margin-top: 2px;
         }
 
-        .iconButton {
-            width: 40px;
-            height: 40px;
-            border: 0;
-            border-radius: 12px;
-            background: #f1f5f9;
-            cursor: pointer;
-            font-family: inherit;
+        .top-actions {
+            display: flex;
+            gap: 6px;
         }
 
-        .searchBox {
+        .icon-button {
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 10px;
+            background: #f2f5f9;
+            color: #465266;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-button:hover {
+            background: #e9eef5;
+        }
+
+        .search-wrapper {
             position: relative;
         }
 
-        .searchBox input {
+        #userSearch {
             width: 100%;
-            height: 44px;
-            border: 0;
-            border-radius: 12px;
-            background: #f2f5f8;
-            padding: 0 14px;
+            border: none;
             outline: none;
-            font-family: inherit;
+            background: #f3f5f8;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+        }
+
+        #searchOverlay {
+            position: absolute;
+            top: 49px;
+            right: 0;
+            left: 0;
+            z-index: 50;
+            background: #fff;
+            border: 1px solid #e5e9ef;
+            border-radius: 13px;
+            box-shadow: 0 12px 30px rgba(0,0,0,.09);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .search-result {
+            padding: 11px 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .search-result:hover {
+            background: #f5f7fa;
         }
 
         .tabs {
             display: flex;
-            border-bottom: 1px solid #edf0f4;
+            gap: 4px;
+            margin-top: 15px;
         }
 
-        .tabButton {
+        .tab-button {
             flex: 1;
-            border: 0;
+            border: none;
+            padding: 9px 5px;
+            border-radius: 9px;
             background: transparent;
-            padding: 13px 5px;
-            font-family: inherit;
-            color: #7d8792;
-            cursor: pointer;
-            font-weight: 600;
+            color: #7d8797;
+            font-size: 12px;
         }
 
-        .tabButton.active {
+        .tab-button.active {
+            background: #eaf3ff;
             color: #1677ff;
-            border-bottom: 2px solid #1677ff;
+            font-weight: 700;
         }
 
-        .chatList {
+        #chatList {
             flex: 1;
             overflow-y: auto;
         }
 
-        .chatItem {
-            padding: 13px 16px;
+        .chat-item {
+            padding: 12px 15px;
             display: flex;
             gap: 11px;
             cursor: pointer;
-            border-bottom: 1px solid #f1f3f5;
+            border-bottom: 1px solid #f2f4f7;
         }
 
-        .chatItem:hover,
-        .chatItem.active {
-            background: #f1f6ff;
+        .chat-item:hover {
+            background: #f7f9fb;
         }
 
-        .chatItemInfo {
+        .chat-item.active {
+            background: #edf5ff;
+        }
+
+        .chat-item-info {
             min-width: 0;
             flex: 1;
         }
 
-        .chatItemTop {
+        .chat-item-top {
             display: flex;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .chatItemName {
+        .chat-item-name {
             font-weight: 700;
+            font-size: 13px;
             overflow: hidden;
-            text-overflow: ellipsis;
             white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
-        .chatItemTime {
-            color: #9ba5af;
+        .chat-item-time {
+            color: #98a0ad;
+            font-size: 10px;
+        }
+
+        .chat-item-message {
+            color: #87909f;
             font-size: 11px;
-        }
-
-        .chatPreview {
-            color: #8a949f;
-            font-size: 12px;
-            margin-top: 4px;
+            margin-top: 5px;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
-        .emptyList {
-            padding: 35px 20px;
-            text-align: center;
-            color: #929ba5;
-            font-size: 14px;
-        }
+        /* Main */
 
-        .mainArea {
+        #mainContent {
             flex: 1;
             min-width: 0;
             display: flex;
             flex-direction: column;
-            position: relative;
         }
 
-        .chatHeader {
+        #chatHeaderEmpty {
             height: 70px;
-            min-height: 70px;
-            background: white;
-            border-bottom: 1px solid #e1e7ee;
+            border-bottom: 1px solid #e9edf2;
             display: flex;
             align-items: center;
             padding: 0 20px;
-            gap: 12px;
+            color: #8a93a2;
+            font-size: 13px;
         }
 
-        .chatHeaderInfo {
+        #chatHeaderUser {
+            height: 70px;
+            border-bottom: 1px solid #e9edf2;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 11px;
+        }
+
+        #chatHeaderInfo {
             flex: 1;
             min-width: 0;
         }
 
-        .chatHeaderInfo strong {
-            display: block;
+        #chatHeaderName {
+            font-weight: 700;
+            font-size: 14px;
         }
 
-        .chatHeaderInfo small {
-            color: #8b96a2;
+        #chatHeaderStatus {
+            color: #8a93a2;
+            font-size: 11px;
+            margin-top: 2px;
         }
 
-        .chatHeaderActions {
+        #chatHeaderActions {
             display: flex;
-            gap: 7px;
+            gap: 6px;
         }
 
-        .chatBody {
+        #welcomeChat {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .welcome-box {
+            max-width: 420px;
+        }
+
+        .welcome-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 25px;
+            margin: 0 auto 18px;
+            background: #eaf3ff;
+            color: #1677ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .welcome-box h2 {
+            margin: 0 0 8px;
+        }
+
+        .welcome-box p {
+            margin: 0;
+            color: #8992a1;
+            font-size: 13px;
+            line-height: 1.9;
+        }
+
+        #messageArea {
             flex: 1;
             min-height: 0;
             display: flex;
             flex-direction: column;
         }
 
-        .welcomeChat {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #8b96a2;
-            padding: 30px;
-        }
-
-        .welcomeIcon {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 20px;
-            border-radius: 28px;
-            background: #dfeeff;
-            color: #1677ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-        }
-
-        .messagesContainer {
+        #messagesContainer {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(22,119,255,.025), transparent 25%),
+                #f8fafc;
         }
 
-        .messageRow {
+        .message-row {
             display: flex;
+            margin-bottom: 9px;
         }
 
-        .messageRow.mine {
+        .message-row.mine {
             justify-content: flex-start;
         }
 
-        .messageRow.theirs {
+        .message-row.theirs {
             justify-content: flex-end;
         }
 
-        .messageBubble {
-            max-width: min(70%, 550px);
-            padding: 9px 13px;
-            border-radius: 15px;
+        .message-bubble {
+            max-width: min(70%, 520px);
+            padding: 9px 12px;
+            border-radius: 14px;
+            font-size: 13px;
             line-height: 1.8;
             word-break: break-word;
-            white-space: pre-wrap;
         }
 
-        .mine .messageBubble {
+        .mine .message-bubble {
             background: #1677ff;
-            color: white;
+            color: #fff;
             border-bottom-right-radius: 4px;
         }
 
-        .theirs .messageBubble {
-            background: white;
-            color: #222;
-            border: 1px solid #e3e8ee;
+        .theirs .message-bubble {
+            background: #fff;
+            color: #263246;
+            border: 1px solid #e8ecf2;
             border-bottom-left-radius: 4px;
         }
 
-        .messageTime {
-            display: block;
+        .message-time {
             font-size: 9px;
             opacity: .65;
             margin-top: 2px;
             text-align: left;
         }
 
-        .messageArea {
-            padding: 12px 16px;
-            background: white;
-            border-top: 1px solid #e1e7ee;
+        #messageInputArea {
+            border-top: 1px solid #e7ebf0;
+            padding: 12px 15px;
+            background: #fff;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .messageInput {
+        #messageInput {
             flex: 1;
-            border: 0;
-            outline: none;
-            background: #f2f5f8;
-            border-radius: 14px;
-            min-height: 45px;
-            max-height: 130px;
-            padding: 11px 14px;
-            font-family: inherit;
             resize: none;
+            min-height: 42px;
+            max-height: 130px;
+            border: 1px solid #dfe4eb;
+            border-radius: 13px;
+            outline: none;
+            padding: 10px 12px;
         }
 
-        .sendButton {
-            width: 45px;
-            height: 45px;
-            border: 0;
-            border-radius: 14px;
+        #messageInput:focus {
+            border-color: #1677ff;
+        }
+
+        #sendMessageButton {
+            width: 43px;
+            height: 43px;
+            border: none;
+            border-radius: 12px;
             background: #1677ff;
-            color: white;
-            cursor: pointer;
-            font-size: 17px;
+            color: #fff;
+            font-size: 16px;
         }
 
-        .searchOverlay {
-            position: absolute;
-            top: 70px;
-            right: 0;
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            border: 1px solid #e0e6ed;
-            box-shadow: 0 20px 50px rgba(0,0,0,.12);
-            z-index: 50;
-            border-radius: 0 0 16px 16px;
-            max-height: 400px;
-            overflow-y: auto;
+        #fileButton {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            color: #6f798a;
         }
 
-        .searchResult {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 13px 16px;
-            cursor: pointer;
-        }
+        /* Modal */
 
-        .searchResult:hover {
-            background: #f4f7fb;
-        }
-
-        .modalOverlay {
+        .modal {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,.45);
+            z-index: 1000;
+            background: rgba(14, 22, 35, .48);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
             padding: 20px;
         }
 
-        .modal {
-            width: min(100%, 450px);
+        .modal-box {
+            width: 100%;
+            max-width: 430px;
             max-height: 90vh;
             overflow-y: auto;
-            background: white;
-            border-radius: 22px;
-            padding: 24px;
-            box-shadow: 0 25px 80px rgba(0,0,0,.25);
+            background: #fff;
+            border-radius: 20px;
+            padding: 23px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.18);
         }
 
-        .modalHeader {
+        .modal-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
 
-        .modalHeader h3 {
+        .modal-header h3 {
             margin: 0;
         }
 
-        .modalClose {
-            width: 38px;
-            height: 38px;
-            border: 0;
-            border-radius: 10px;
-            background: #f2f4f6;
-            cursor: pointer;
-        }
-
-        .settingRow {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid #edf0f3;
-            gap: 15px;
-        }
-
-        .settingRow select {
-            min-width: 120px;
-            height: 38px;
-            border: 1px solid #dce2e8;
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border: none;
             border-radius: 9px;
-            font-family: inherit;
-            padding: 0 8px;
+            background: #f1f3f6;
         }
 
-        .dangerButton {
+        .danger-button {
             width: 100%;
-            min-height: 45px;
-            margin-top: 20px;
-            border: 0;
-            border-radius: 12px;
-            background: #ef4444;
-            color: white;
-            font-family: inherit;
+            border: none;
+            border-radius: 11px;
+            padding: 12px;
+            background: #e53935;
+            color: #fff;
             font-weight: 700;
-            cursor: pointer;
         }
 
-        .profileBig {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .profileBig .avatar {
-            width: 80px;
-            height: 80px;
-            margin: auto;
-            font-size: 30px;
-        }
-
-        .profileInfo {
-            padding: 13px;
-            background: #f5f7fa;
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-
-        .profileInfo small {
-            color: #8a949f;
-            display: block;
-            margin-bottom: 4px;
-        }
+        /* Toast */
 
         #toast {
             position: fixed;
-            left: 50%;
-            bottom: 25px;
-            transform: translate(-50%, 100px);
-            z-index: 99999;
+            z-index: 999999;
+            left: 20px;
+            bottom: 20px;
             min-width: 230px;
-            max-width: calc(100% - 30px);
-            background: #202832;
-            color: white;
-            padding: 13px 17px;
-            border-radius: 13px;
-            box-shadow: 0 15px 40px rgba(0,0,0,.2);
+            max-width: 400px;
+            background: #202938;
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            box-shadow: 0 12px 35px rgba(0,0,0,.2);
+            font-size: 12px;
+            transform: translateY(100px);
             opacity: 0;
             transition: .25s;
-            pointer-events: none;
-            text-align: center;
         }
 
         #toast.show {
+            transform: translateY(0);
             opacity: 1;
-            transform: translate(-50%, 0);
         }
 
-        @media (max-width: 750px) {
-            .sidebar {
-                width: 100%;
-                min-width: 100%;
-            }
+        /* Mobile */
 
-            .sidebar.mobileHidden {
-                display: none;
-            }
-
-            .mainArea {
+        @media (max-width: 760px) {
+            #sidebar {
                 width: 100%;
             }
 
-            .mainArea.mobileHidden {
+            #mainContent {
                 display: none;
             }
 
-            .chatHeader {
-                padding: 0 12px;
+            #appPage.chat-open #sidebar {
+                display: none;
             }
 
-            .messagesContainer {
-                padding: 12px;
+            #appPage.chat-open #mainContent {
+                display: flex;
             }
 
-            .messageBubble {
+            #chatHeaderUser {
+                height: 62px;
+            }
+
+            .mobile-back {
+                display: flex !important;
+            }
+
+            .message-bubble {
                 max-width: 82%;
             }
+        }
+
+        .mobile-back {
+            display: none;
+        }
+
+        /* Dark theme */
+
+        body.dark-theme {
+            background: #11161d;
+            color: #e9edf3;
+        }
+
+        body.dark-theme #appPage,
+        body.dark-theme #sidebar,
+        body.dark-theme #chatHeaderUser,
+        body.dark-theme #messageInputArea,
+        body.dark-theme .modal-box {
+            background: #171d25;
+            color: #e9edf3;
+        }
+
+        body.dark-theme #sidebar {
+            border-color: #252d38;
+        }
+
+        body.dark-theme .sidebar-top,
+        body.dark-theme #chatHeaderUser,
+        body.dark-theme #messageInputArea {
+            border-color: #252d38;
+        }
+
+        body.dark-theme #userSearch,
+        body.dark-theme #messageInput,
+        body.dark-theme .form-group input,
+        body.dark-theme .settings-select {
+            background: #202832;
+            border-color: #303a47;
+            color: #fff;
+        }
+
+        body.dark-theme #messagesContainer {
+            background: #11161d;
+        }
+
+        body.dark-theme .theirs .message-bubble {
+            background: #202832;
+            border-color: #303a47;
+            color: #e9edf3;
+        }
+
+        body.dark-theme .chat-item:hover {
+            background: #202832;
+        }
+
+        body.dark-theme .chat-item.active {
+            background: #172c46;
+        }
+
+        body.dark-theme .icon-button,
+        body.dark-theme .modal-close {
+            background: #252d38;
+            color: #e9edf3;
         }
     </style>
 </head>
@@ -698,85 +796,63 @@
 
     <!-- Loading -->
     <div id="loadingScreen">
-        <div class="loadingBox">
-            <div class="loadingLogo">گ</div>
-
-            <h2>گفتینو</h2>
-
-            <div class="loadingSpinner"></div>
-
-            <p id="loadingText">
-                در حال اتصال به سرور...
-            </p>
-        </div>
+        <div class="loading-logo">گ</div>
+        <div class="loading-spinner"></div>
+        <div id="loadingText">در حال راه‌اندازی گفتینو...</div>
     </div>
 
 
     <!-- Authentication -->
-    <section id="authPage" class="authPage hidden">
+    <section id="authPage" class="hidden">
+        <div class="auth-container">
 
-        <div class="authCard">
-
-            <div class="authLogo">گ</div>
-
-            <h1 class="authTitle">
-                گفتینو
-            </h1>
-
-            <p class="authSubtitle">
-                پیام‌رسان مجموعه آریکا
-            </p>
-
+            <div class="auth-logo">
+                <div class="auth-logo-icon">گ</div>
+                <h1>گفتینو</h1>
+                <p>پیام‌رسان مجموعه آریکا</p>
+            </div>
 
             <!-- Login -->
+            <div id="loginBox" class="auth-box">
 
-            <div id="loginBox">
+                <h2>ورود به حساب</h2>
+                <p class="auth-description">
+                    برای ورود اطلاعات حساب خود را وارد کنید.
+                </p>
 
                 <form id="loginForm">
 
-                    <div class="formGroup">
-                        <label>
-                            ایمیل
-                        </label>
-
+                    <div class="form-group">
+                        <label for="loginEmail">ایمیل</label>
                         <input
                             id="loginEmail"
                             type="email"
-                            autocomplete="off"
-                            spellcheck="false"
+                            autocomplete="email"
+                            placeholder="example@email.com"
                             required
                         >
                     </div>
 
-                    <div class="formGroup">
-                        <label>
-                            رمز عبور
-                        </label>
-
+                    <div class="form-group">
+                        <label for="loginPassword">رمز عبور</label>
                         <input
                             id="loginPassword"
                             type="password"
-                            autocomplete="off"
+                            autocomplete="current-password"
+                            placeholder="رمز عبور"
                             required
                         >
                     </div>
 
-                    <button
-                        class="primaryButton"
-                        type="submit"
-                    >
-                        ورود به گفتینو
+                    <button class="primary-button" type="submit">
+                        ورود
                     </button>
 
                 </form>
 
-                <div class="authSwitch">
+                <div class="auth-switch">
                     حساب ندارید؟
-
-                    <button
-                        id="showRegisterButton"
-                        type="button"
-                    >
+                    <button id="showRegisterButton" type="button">
                         ثبت‌نام کنید
                     </button>
                 </div>
@@ -785,86 +861,70 @@
 
 
             <!-- Register -->
+            <div id="registerBox" class="auth-box hidden">
 
-            <div
-                id="registerBox"
-                class="hidden"
-            >
+                <h2>ساخت حساب</h2>
+                <p class="auth-description">
+                    یک حساب جدید در گفتینو ایجاد کنید.
+                </p>
 
                 <form id="registerForm">
 
-                    <div class="formGroup">
-                        <label>
-                            نام شما
-                        </label>
-
+                    <div class="form-group">
+                        <label for="registerName">نام نمایشی</label>
                         <input
                             id="registerName"
                             type="text"
-                            autocomplete="off"
-                            required
                             maxlength="40"
+                            placeholder="نام شما"
+                            required
                         >
                     </div>
 
-                    <div class="formGroup">
-                        <label>
-                            ایمیل
-                        </label>
-
+                    <div class="form-group">
+                        <label for="registerEmail">ایمیل</label>
                         <input
                             id="registerEmail"
                             type="email"
-                            autocomplete="off"
-                            spellcheck="false"
+                            autocomplete="email"
+                            placeholder="example@email.com"
                             required
                         >
                     </div>
 
-                    <div class="formGroup">
-                        <label>
-                            رمز عبور
-                        </label>
-
+                    <div class="form-group">
+                        <label for="registerPassword">رمز عبور</label>
                         <input
                             id="registerPassword"
                             type="password"
-                            autocomplete="off"
-                            minlength="4"
+                            autocomplete="new-password"
+                            placeholder="حداقل ۶ کاراکتر"
+                            minlength="6"
                             required
                         >
                     </div>
 
-                    <div class="formGroup">
-                        <label>
-                            تکرار رمز عبور
-                        </label>
-
+                    <div class="form-group">
+                        <label for="registerPassword2">تکرار رمز عبور</label>
                         <input
                             id="registerPassword2"
                             type="password"
-                            autocomplete="off"
-                            minlength="4"
+                            autocomplete="new-password"
+                            placeholder="تکرار رمز عبور"
+                            minlength="6"
                             required
                         >
                     </div>
 
-                    <button
-                        class="primaryButton"
-                        type="submit"
-                    >
-                        ساخت حساب
+                    <button class="primary-button" type="submit">
+                        ثبت‌نام
                     </button>
 
                 </form>
 
-                <div class="authSwitch">
-                    قبلاً ثبت‌نام کرده‌اید؟
-
-                    <button
-                        id="showLoginButton"
-                        type="button"
-                    >
+                <div class="auth-switch">
+                    قبلاً حساب ساخته‌اید؟
+                    <button id="showLoginButton" type="button">
                         ورود
                     </button>
                 </div>
@@ -872,67 +932,63 @@
             </div>
 
         </div>
-
     </section>
 
 
-    <!-- Main App -->
-
-    <section
-        id="appPage"
-        class="hidden"
-    >
+    <!-- Main application -->
+    <section id="appPage" class="hidden">
 
         <!-- Sidebar -->
+        <aside id="sidebar">
 
-        <aside
-            id="sidebar"
-            class="sidebar"
-        >
+            <div class="sidebar-top">
 
-            <div class="sidebarTop">
+                <div class="sidebar-profile">
 
-                <div class="profileRow">
-
-                    <div
-                        id="sidebarAvatar"
-                        class="avatar"
-                    >
+                    <div id="sidebarAvatar" class="avatar">
                         گ
                     </div>
 
-                    <div class="profileText">
-
-                        <strong id="sidebarUserName">
-                            کاربر
-                        </strong>
-
-                        <small>
-                            آنلاین
-                        </small>
-
+                    <div class="sidebar-user-info">
+                        <strong id="sidebarUserName">کاربر</strong>
+                        <span>گفتینو</span>
                     </div>
 
-                    <button
-                        id="profileButton"
-                        class="iconButton"
-                        title="پروفایل"
-                    >
-                        ●
-                    </button>
+                    <div class="top-actions">
 
-                    <button
-                        id="settingsButton"
-                        class="iconButton"
-                        title="تنظیمات"
-                    >
-                        ⚙
-                    </button>
+                        <button
+                            id="profileButton"
+                            class="icon-button"
+                            type="button"
+                            title="پروفایل"
+                        >
+                            ◉
+                        </button>
+
+                        <button
+                            id="settingsButton"
+                            class="icon-button"
+                            type="button"
+                            title="تنظیمات"
+                        >
+                            ⚙
+                        </button>
+
+                        <button
+                            id="logoutButton"
+                            class="icon-button"
+                            type="button"
+                            title="خروج"
+                        >
+                            ↪
+                        </button>
+
+                    </div>
 
                 </div>
 
 
-                <div class="searchBox">
+                <div class="search-wrapper">
 
                     <input
                         id="userSearch"
@@ -941,192 +997,129 @@
                         autocomplete="off"
                     >
 
-                </div>
-
-            </div>
-
-
-            <div class="tabs">
-
-                <button
-                    class="tabButton active"
-                    data-tab="private"
-                    type="button"
-                >
-                    گفتگوها
-                </button>
-
-                <button
-                    class="tabButton"
-                    data-tab="groups"
-                    type="button"
-                >
-                    گروه‌ها
-                </button>
-
-                <button
-                    class="tabButton"
-                    data-tab="channels"
-                    type="button"
-                >
-                    کانال‌ها
-                </button>
-
-            </div>
-
-
-            <div
-                id="chatList"
-                class="chatList"
-            ></div>
-
-
-            <div
-                id="searchOverlay"
-                class="searchOverlay hidden"
-            >
-                <div
-                    id="searchResults"
-                ></div>
-            </div>
-
-        </aside>
-
-
-        <!-- Main -->
-
-        <main
-            id="mainArea"
-            class="mainArea"
-        >
-
-            <!-- Empty Header -->
-
-            <header
-                id="chatHeaderEmpty"
-                class="chatHeader"
-            >
-
-                <div>
-                    <strong>
-                        گفتینو
-                    </strong>
-
-                    <small>
-                        پیام‌رسان آریکا
-                    </small>
-                </div>
-
-            </header>
-
-
-            <!-- User Header -->
-
-            <header
-                id="chatHeaderUser"
-                class="chatHeader hidden"
-            >
-
-                <button
-                    id="backToSidebarButton"
-                    class="iconButton"
-                    type="button"
-                >
-                    ‹
-                </button>
-
-                <div
-                    id="chatHeaderAvatar"
-                    class="avatar"
-                >
-                    گ
-                </div>
-
-                <div class="chatHeaderInfo">
-
-                    <strong
-                        id="chatHeaderName"
-                    >
-                        کاربر
-                    </strong>
-
-                    <small
-                        id="chatHeaderStatus"
-                    >
-                        آنلاین
-                    </small>
-
-                </div>
-
-                <div
-                    id="chatHeaderActions"
-                    class="chatHeaderActions"
-                >
-
-                    <button
-                        id="chatInfoButton"
-                        class="iconButton"
-                        type="button"
-                    >
-                        i
-                    </button>
-
-                </div>
-
-            </header>
-
-
-            <div class="chatBody">
-
-                <!-- Welcome -->
-
-                <div
-                    id="welcomeChat"
-                    class="welcomeChat"
-                >
-
-                    <div>
-
-                        <div class="welcomeIcon">
-                            گ
-                        </div>
-
-                        <h2>
-                            به گفتینو خوش آمدید
-                        </h2>
-
-                        <p>
-                            یک کاربر را جستجو کنید
-                            و گفتگوی خود را شروع کنید.
-                        </p>
-
+                    <div id="searchOverlay" class="hidden">
+                        <div id="searchResults"></div>
                     </div>
 
                 </div>
 
 
-                <!-- Messages -->
+                <div class="tabs">
 
-                <div
-                    id="messagesContainer"
-                    class="messagesContainer hidden"
-                ></div>
+                    <button
+                        class="tab-button active"
+                        data-tab="private"
+                        type="button"
+                    >
+                        گفتگوها
+                    </button>
+
+                    <button
+                        class="tab-button"
+                        data-tab="groups"
+                        type="button"
+                    >
+                        گروه‌ها
+                    </button>
+
+                    <button
+                        class="tab-button"
+                        data-tab="channels"
+                        type="button"
+                    >
+                        کانال‌ها
+                    </button>
+
+                </div>
+
+            </div>
 
 
-                <!-- Message Input -->
+            <div id="chatList"></div>
 
-                <div
-                    id="messageArea"
-                    class="messageArea hidden"
+        </aside>
+
+
+        <!-- Main content -->
+        <main id="mainContent">
+
+            <!-- Empty header -->
+            <div id="chatHeaderEmpty">
+                یک گفتگو را انتخاب کنید
+            </div>
+
+
+            <!-- Chat header -->
+            <div id="chatHeaderUser" class="hidden">
+
+                <button
+                    id="mobileBackButton"
+                    class="icon-button mobile-back"
+                    type="button"
+                    title="بازگشت"
                 >
+                    ‹
+                </button>
+
+                <div id="chatHeaderAvatar" class="avatar">
+                    گ
+                </div>
+
+                <div id="chatHeaderInfo">
+                    <div id="chatHeaderName">کاربر</div>
+                    <div id="chatHeaderStatus">گفتینو</div>
+                </div>
+
+                <div id="chatHeaderActions">
+
+                    <button
+                        id="chatInfoButton"
+                        class="icon-button"
+                        type="button"
+                        title="اطلاعات گفتگو"
+                    >
+                        ⓘ
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Welcome -->
+            <div id="welcomeChat">
+
+                <div class="welcome-box">
+
+                    <div class="welcome-icon">
+                        گ
+                    </div>
+
+                    <h2>به گفتینو خوش آمدید</h2>
+
+                    <p>
+                        از قسمت جستجو یک کاربر را پیدا کنید
+                        و گفتگوی خود را شروع کنید.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Messages -->
+            <div id="messageArea" class="hidden">
+
+                <div id="messagesContainer"></div>
+
+                <div id="messageInputArea">
 
                     <button
                         id="fileButton"
-                        class="iconButton"
                         type="button"
                         title="ارسال فایل"
                     >
-                        +
+                        ＋
                     </button>
 
                     <input
@@ -1137,15 +1130,15 @@
 
                     <textarea
                         id="messageInput"
-                        class="messageInput"
                         rows="1"
+                        maxlength="5000"
                         placeholder="پیام خود را بنویسید..."
                     ></textarea>
 
                     <button
                         id="sendMessageButton"
-                        class="sendButton"
                         type="button"
+                        title="ارسال"
                     >
                         ➤
                     </button>
@@ -1159,148 +1152,97 @@
     </section>
 
 
-    <!-- Profile Modal -->
+    <!-- Profile modal -->
+    <div id="profileModal" class="modal hidden">
 
-    <div
-        id="profileModal"
-        class="modalOverlay hidden"
-    >
+        <div class="modal-box">
 
-        <div class="modal">
-
-            <div class="modalHeader">
-
-                <h3>
-                    پروفایل من
-                </h3>
+            <div class="modal-header">
+                <h3>پروفایل</h3>
 
                 <button
-                    class="modalClose"
+                    class="modal-close"
                     data-close-modal="profileModal"
                     type="button"
                 >
                     ×
                 </button>
-
             </div>
 
-            <div class="profileBig">
+            <div style="text-align:center;margin-bottom:20px">
 
                 <div
                     id="profileAvatar"
                     class="avatar"
+                    style="width:75px;height:75px;margin:0 auto 12px;font-size:25px"
                 >
                     گ
                 </div>
 
-                <h3
-                    id="profileName"
-                >
+                <h3 id="profileName" style="margin:0">
                     کاربر
                 </h3>
 
-            </div>
-
-            <div class="profileInfo">
-
-                <small>
-                    ایمیل
-                </small>
-
-                <span
+                <p
                     id="profileEmail"
+                    style="margin:6px 0;color:#8992a1;font-size:12px"
                 >
                     -
-                </span>
+                </p>
 
             </div>
 
-            <div class="profileInfo">
-
-                <small>
-                    شناسه کاربری
-                </small>
-
-                <span
-                    id="profileId"
-                >
-                    -
-                </span>
-
-            </div>
-
-            <div class="profileInfo">
-
-                <small>
-                    وضعیت
-                </small>
-
-                <span
-                    id="profileStatus"
-                >
-                    فعال
-                </span>
-
-            </div>
-
-            <button
-                id="logoutButton"
-                class="dangerButton"
-                type="button"
+            <div
+                id="profileUserId"
+                style="
+                    background:#f5f7fa;
+                    border-radius:11px;
+                    padding:11px;
+                    font-size:12px;
+                    color:#667085;
+                    text-align:center;
+                "
             >
-                خروج از حساب
-            </button>
+                شناسه: -
+            </div>
 
         </div>
 
     </div>
 
 
-    <!-- Settings Modal -->
+    <!-- Settings modal -->
+    <div id="settingsModal" class="modal hidden">
 
-    <div
-        id="settingsModal"
-        class="modalOverlay hidden"
-    >
+        <div class="modal-box">
 
-        <div class="modal">
-
-            <div class="modalHeader">
-
-                <h3>
-                    تنظیمات
-                </h3>
+            <div class="modal-header">
+                <h3>تنظیمات</h3>
 
                 <button
-                    class="modalClose"
+                    class="modal-close"
                     data-close-modal="settingsModal"
                     type="button"
                 >
                     ×
                 </button>
-
             </div>
 
-            <div class="settingRow">
 
-                <div>
-                    <strong>
-                        ظاهر
-                    </strong>
+            <div class="form-group">
 
-                    <div>
-                        حالت نمایش
-                    </div>
-                </div>
+                <label for="themeSelect">
+                    پوسته
+                </label>
 
-                <select id="themeSelect">
+                <select id="themeSelect" class="settings-select">
 
                     <option value="light">
                         روشن
                     </option>
 
                     <option value="dark">
-                        تیره
+                        تاریک
                     </option>
 
                 </select>
@@ -1308,22 +1250,20 @@
             </div>
 
 
-            <div class="settingRow">
+            <div class="form-group">
 
-                <div>
-                    <strong>
-                        اندازه متن
-                    </strong>
-                </div>
+                <label for="fontSizeSelect">
+                    اندازه نوشته
+                </label>
 
-                <select id="fontSizeSelect">
+                <select id="fontSizeSelect" class="settings-select">
 
                     <option value="small">
                         کوچک
                     </option>
 
-                    <option value="normal">
-                        معمولی
+                    <option value="medium" selected>
+                        متوسط
                     </option>
 
                     <option value="large">
@@ -1337,10 +1277,10 @@
 
             <button
                 id="deleteAccountButton"
-                class="dangerButton"
+                class="danger-button"
                 type="button"
             >
-                حذف حساب
+                حذف حساب کاربری
             </button>
 
         </div>
@@ -1348,23 +1288,19 @@
     </div>
 
 
-    <!-- Delete Account -->
+    <!-- Delete account modal -->
+    <div id="deleteAccountModal" class="modal hidden">
 
-    <div
-        id="deleteAccountModal"
-        class="modalOverlay hidden"
-    >
+        <div class="modal-box">
 
-        <div class="modal">
-
-            <div class="modalHeader">
+            <div class="modal-header">
 
                 <h3>
                     حذف حساب
                 </h3>
 
                 <button
-                    class="modalClose"
+                    class="modal-close"
                     data-close-modal="deleteAccountModal"
                     type="button"
                 >
@@ -1373,18 +1309,14 @@
 
             </div>
 
-            <p>
-                آیا مطمئن هستید که می‌خواهید حساب
-                خود را حذف کنید؟
-            </p>
-
-            <p>
+            <p style="line-height:2;color:#667085;font-size:13px">
+                آیا مطمئن هستید که می‌خواهید حساب کاربری خود را حذف کنید؟
                 این عملیات قابل بازگشت نیست.
             </p>
 
             <button
                 id="confirmDeleteAccount"
-                class="dangerButton"
+                class="danger-button"
                 type="button"
             >
                 بله، حسابم را حذف کن
@@ -1395,23 +1327,19 @@
     </div>
 
 
-    <!-- Chat Info -->
+    <!-- Chat info modal -->
+    <div id="chatInfoModal" class="modal hidden">
 
-    <div
-        id="chatInfoModal"
-        class="modalOverlay hidden"
-    >
+        <div class="modal-box">
 
-        <div class="modal">
-
-            <div class="modalHeader">
+            <div class="modal-header">
 
                 <h3>
                     اطلاعات گفتگو
                 </h3>
 
                 <button
-                    class="modalClose"
+                    class="modal-close"
                     data-close-modal="chatInfoModal"
                     type="button"
                 >
@@ -1420,9 +1348,28 @@
 
             </div>
 
-            <div
-                id="chatInfoContent"
-            ></div>
+            <div style="text-align:center">
+
+                <div
+                    id="chatInfoAvatar"
+                    class="avatar"
+                    style="width:75px;height:75px;margin:0 auto 12px;font-size:25px"
+                >
+                    گ
+                </div>
+
+                <h3 id="chatInfoName" style="margin:0">
+                    کاربر
+                </h3>
+
+                <p
+                    id="chatInfoId"
+                    style="color:#8992a1;font-size:12px"
+                >
+                    شناسه: -
+                </p>
+
+            </div>
 
         </div>
 
@@ -1430,11 +1377,10 @@
 
 
     <!-- Toast -->
-
     <div id="toast">
 
         <span id="toastIcon">
-            i
+            ●
         </span>
 
         <span id="toastMessage">
@@ -1444,15 +1390,61 @@
     </div>
 
 
-    <!--
-        مهم:
-        PrefsDB باید قبل از app.js لود شود.
-    -->
+    <!-- ========================================================= -->
+    <!-- PrefsDB                                                    -->
+    <!-- ========================================================= -->
 
     <script
         src="https://prefs.us/prefs.us.js"
+        onload="window.__prefsLoaded = true"
+        onerror="window.__prefsLoaded = false"
     ></script>
 
+
+    <script>
+        /*
+         * بررسی لود شدن PrefsDB
+         *
+         * مهم:
+         * این کد قبل از app.js اجرا می‌شود.
+         */
+
+        window.addEventListener("load", function () {
+
+            console.log(
+                "PrefsDB loaded:",
+                window.__prefsLoaded
+            );
+
+            console.log(
+                "prefs_us:",
+                window.prefs_us
+            );
+
+            if (
+                window.__prefsLoaded === false ||
+                typeof window.prefs_us === "undefined"
+            ) {
+
+                console.error(
+                    "PrefsDB could not be loaded."
+                );
+
+                const loadingText =
+                    document.getElementById("loadingText");
+
+                if (loadingText) {
+                    loadingText.textContent =
+                        "خطا در بارگذاری دیتابیس گفتینو";
+                }
+
+            }
+
+        });
+    </script>
+
+
+    <!-- Main JavaScript -->
     <script src="app.js"></script>
 
 </body>
