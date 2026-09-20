@@ -2,7 +2,7 @@
 
 /* =========================================================
    GOFTINO
-   Complete app.js
+   ARIKA Messenger
    GitHub Pages + PrefsDB
    ========================================================= */
 
@@ -16,134 +16,178 @@ const PREFS_KEY_ID = "goftino-main-v1";
 const PREFS_SEED = [
     "goftino",
     "arika",
-    "sina",
-    "goftino-database-v1"
+    "goftino",
+    "database-v1"
 ];
 
-const PREFS_PROJECT = "goftino";
+const PREFS_DOMAIN = "goftino";
 
 const SESSION_KEY = "goftino_session";
+
 const THEME_KEY = "goftino_theme";
+
 const FONT_KEY = "goftino_font_size";
 
 const POLL_INTERVAL = 3000;
 
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
 let currentUser = null;
+
 let currentChat = null;
 
 let usersCache = [];
+
 let chatsCache = [];
 
 let currentTab = "private";
 
 let pollTimer = null;
-let polling = false;
 
-let dbQueue = Promise.resolve();
+let isPolling = false;
+
+let prefsTokenReady = false;
 
 
 /* =========================================================
-   BASIC HELPERS
+   DOM
    ========================================================= */
 
-function $(selector) {
-    return document.querySelector(selector);
-}
+const $ = selector =>
+    document.querySelector(selector);
 
-function $all(selector) {
-    return Array.from(document.querySelectorAll(selector));
-}
+const $$ = selector =>
+    Array.from(
+        document.querySelectorAll(selector)
+    );
+
+
+/* =========================================================
+   GENERAL HELPERS
+   ========================================================= */
 
 function escapeHTML(value) {
-    if (value === null || value === undefined) {
-        return "";
-    }
 
-    return String(value)
+    return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
 }
 
+
 function normalizeEmail(email) {
+
     return String(email || "")
         .trim()
         .toLowerCase();
+
 }
 
+
 function normalizeName(name) {
+
     return String(name || "")
         .trim()
         .replace(/\s+/g, " ");
+
 }
 
+
 function generateId(prefix = "id") {
+
     if (
         typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
+        crypto.randomUUID
     ) {
-        return `${prefix}_${crypto.randomUUID()}`;
+
+        return (
+            prefix +
+            "_" +
+            crypto.randomUUID()
+        );
+
     }
 
     return (
         prefix +
         "_" +
-        Date.now().toString(36) +
+        Date.now() +
         "_" +
         Math.random()
             .toString(36)
-            .slice(2, 12)
+            .slice(2)
     );
+
 }
 
-function timestamp() {
-    return Date.now();
-}
-
-function formatTime(value) {
-    if (!value) return "";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return "";
-    }
-
-    return date.toLocaleTimeString("fa-IR", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-}
-
-function formatDate(value) {
-    if (!value) return "";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return "";
-    }
-
-    return date.toLocaleDateString("fa-IR");
-}
 
 function getInitial(name) {
-    const value = normalizeName(name);
 
-    if (!value) {
-        return "گ";
-    }
+    const value =
+        normalizeName(name);
 
-    return value.charAt(0);
+    return value
+        ? value.charAt(0)
+        : "گ";
+
 }
 
-function isDeletedUser(user) {
-    return !!(
-        user &&
-        user.deleted === true
+
+function formatTime(timestamp) {
+
+    if (!timestamp) {
+        return "";
+    }
+
+    const date =
+        new Date(timestamp);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return date.toLocaleTimeString(
+        "fa-IR",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
     );
+
+}
+
+
+function formatDate(timestamp) {
+
+    if (!timestamp) {
+        return "";
+    }
+
+    const date =
+        new Date(timestamp);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return date.toLocaleDateString(
+        "fa-IR"
+    );
+
 }
 
 
@@ -151,57 +195,68 @@ function isDeletedUser(user) {
    TOAST
    ========================================================= */
 
-let toastTimeout = null;
+let toastTimer = null;
 
-function showToast(message, type = "info") {
-    const toast = $("#toast");
+function showToast(
+    message,
+    type = "info"
+) {
+
+    const toast =
+        $("#toast");
 
     if (!toast) {
         alert(message);
         return;
     }
 
-    const messageElement =
+    const messageEl =
         $("#toastMessage");
 
-    const iconElement =
+    const iconEl =
         $("#toastIcon");
 
-    if (messageElement) {
-        messageElement.textContent = message;
+    if (messageEl) {
+        messageEl.textContent =
+            message;
     }
 
-    if (iconElement) {
-        if (type === "success") {
-            iconElement.textContent = "✓";
-        } else if (type === "error") {
-            iconElement.textContent = "!";
-        } else if (type === "warning") {
-            iconElement.textContent = "!";
-        } else {
-            iconElement.textContent = "i";
-        }
+    if (iconEl) {
+
+        iconEl.textContent =
+            type === "success"
+                ? "✓"
+                : type === "error"
+                    ? "!"
+                    : "i";
+
     }
 
     toast.classList.remove(
-        "show",
-        "success",
-        "error",
-        "warning",
-        "info"
+        "show"
     );
 
-    toast.classList.add(type);
+    clearTimeout(
+        toastTimer
+    );
 
     requestAnimationFrame(() => {
-        toast.classList.add("show");
+
+        toast.classList.add(
+            "show"
+        );
+
     });
 
-    clearTimeout(toastTimeout);
+    toastTimer =
+        setTimeout(() => {
 
-    toastTimeout = setTimeout(() => {
-        toast.classList.remove("show");
-    }, 3500);
+            toast.classList.remove(
+                "show"
+            );
+
+        }, 3500);
+
 }
 
 
@@ -210,37 +265,49 @@ function showToast(message, type = "info") {
    ========================================================= */
 
 function setLoadingText(text) {
-    const element = $("#loadingText");
+
+    const element =
+        $("#loadingText");
 
     if (element) {
-        element.textContent = text;
+        element.textContent =
+            text;
     }
+
 }
 
-function showLoading(text = "در حال اتصال به سرور...") {
-    setLoadingText(text);
-
-    const screen =
-        $("#loadingScreen");
-
-    if (!screen) return;
-
-    screen.style.display = "flex";
-
-    screen.classList.remove("hidden");
-}
 
 function hideLoading() {
+
     const screen =
         $("#loadingScreen");
 
-    if (!screen) return;
+    if (!screen) {
+        return;
+    }
 
-    screen.classList.add("hidden");
+    screen.classList.add(
+        "hidden"
+    );
 
-    setTimeout(() => {
-        screen.style.display = "none";
-    }, 350);
+}
+
+
+function showLoading(text) {
+
+    const screen =
+        $("#loadingScreen");
+
+    if (!screen) {
+        return;
+    }
+
+    setLoadingText(text);
+
+    screen.classList.remove(
+        "hidden"
+    );
+
 }
 
 
@@ -249,83 +316,107 @@ function hideLoading() {
    ========================================================= */
 
 function prefsAvailable() {
+
     return (
         typeof window !== "undefined" &&
         typeof window.prefs_us !== "undefined"
     );
+
 }
 
-async function refreshPrefsKey() {
-    if (!prefsAvailable()) {
-        throw new Error(
-            "کتابخانه PrefsDB بارگذاری نشده است."
-        );
-    }
 
-    return new Promise((resolve, reject) => {
-        let done = false;
+/*
+    PrefsDB:
+    getkey(keyId, seed, callback)
 
-        const timeout = setTimeout(() => {
-            if (done) return;
+    طبق مستندات رسمی، توکن کوتاه‌مدت است.
+    بنابراین قبل از هر عملیات دوباره getkey
+    فراخوانی می‌شود.
+*/
 
-            done = true;
 
-            reject(
-                new Error(
-                    "اتصال به PrefsDB زمان‌بر شد."
-                )
-            );
-        }, 15000);
+function getPrefsToken() {
 
-        try {
-            prefs_us.getkey(
-                PREFS_KEY_ID,
-                PREFS_SEED,
-                response => {
-                    if (done) return;
+    return new Promise(
+        (resolve, reject) => {
 
-                    done = true;
+            if (!prefsAvailable()) {
 
-                    clearTimeout(timeout);
+                reject(
+                    new Error(
+                        "PrefsDB بارگذاری نشده است."
+                    )
+                );
 
-                    if (!response) {
-                        reject(
-                            new Error(
-                                "پاسخ نامعتبر از PrefsDB."
-                            )
+                return;
+            }
+
+            try {
+
+                prefs_us.getkey(
+                    PREFS_KEY_ID,
+                    PREFS_SEED,
+                    response => {
+
+                        if (
+                            !response
+                        ) {
+
+                            reject(
+                                new Error(
+                                    "پاسخ خالی از PrefsDB."
+                                )
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            response.success === false
+                        ) {
+
+                            reject(
+                                new Error(
+                                    response.message ||
+                                    "خطا در دریافت کلید PrefsDB."
+                                )
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            !response.token
+                        ) {
+
+                            reject(
+                                new Error(
+                                    "کلید PrefsDB دریافت نشد."
+                                )
+                            );
+
+                            return;
+                        }
+
+                        prefsTokenReady =
+                            true;
+
+                        resolve(
+                            response.token
                         );
 
-                        return;
                     }
+                );
 
-                    if (
-                        response.success === false ||
-                        response.status === "error"
-                    ) {
-                        reject(
-                            new Error(
-                                response.message ||
-                                response.error ||
-                                "خطای PrefsDB."
-                            )
-                        );
+            } catch (error) {
 
-                        return;
-                    }
+                reject(error);
 
-                    resolve(response);
-                }
-            );
-        } catch (error) {
-            if (done) return;
+            }
 
-            done = true;
-
-            clearTimeout(timeout);
-
-            reject(error);
         }
-    });
+    );
+
 }
 
 
@@ -334,89 +425,158 @@ async function refreshPrefsKey() {
    ========================================================= */
 
 async function dbRead(key) {
-    await refreshPrefsKey();
 
-    return new Promise((resolve, reject) => {
-        let done = false;
+    await getPrefsToken();
 
-        const timeout = setTimeout(() => {
-            if (done) return;
+    return new Promise(
+        (resolve, reject) => {
 
-            done = true;
+            try {
 
-            reject(
-                new Error(
-                    "خواندن اطلاعات از PrefsDB زمان‌بر شد."
-                )
-            );
-        }, 20000);
+                const operation =
+                    prefs_us
+                        .domain(
+                            PREFS_DOMAIN
+                        )
+                        .key(key)
+                        .read(
+                            response => {
 
-        try {
-            prefs_us
-                .project(PREFS_PROJECT)
-                .key(key)
-                .read(response => {
-                    if (done) return;
+                                try {
 
-                    done = true;
+                                    if (
+                                        !response
+                                    ) {
 
-                    clearTimeout(timeout);
+                                        resolve(
+                                            null
+                                        );
 
-                    if (!response) {
-                        resolve(null);
-                        return;
-                    }
+                                        return;
+                                    }
 
-                    if (
-                        response.success === false ||
-                        response.status === "error"
-                    ) {
-                        reject(
-                            new Error(
-                                response.message ||
-                                response.error ||
-                                "خطا در خواندن اطلاعات."
-                            )
+                                    if (
+                                        response.success === false
+                                    ) {
+
+                                        reject(
+                                            new Error(
+                                                response.message ||
+                                                "خطا در خواندن اطلاعات."
+                                            )
+                                        );
+
+                                        return;
+                                    }
+
+                                    let value =
+                                        response.value;
+
+                                    if (
+                                        typeof value ===
+                                        "string"
+                                    ) {
+
+                                        try {
+
+                                            value =
+                                                JSON.parse(
+                                                    value
+                                                );
+
+                                        } catch (_) {}
+
+                                    }
+
+                                    resolve(
+                                        value
+                                    );
+
+                                } catch (
+                                    error
+                                ) {
+
+                                    reject(
+                                        error
+                                    );
+
+                                }
+
+                            }
                         );
 
-                        return;
-                    }
 
-                    let value;
+                if (
+                    operation &&
+                    typeof operation.then ===
+                    "function"
+                ) {
 
-                    if (
-                        Object.prototype.hasOwnProperty.call(
-                            response,
-                            "value"
-                        )
-                    ) {
-                        value = response.value;
-                    } else {
-                        value = response;
-                    }
+                    operation
+                        .then(async response => {
 
-                    if (
-                        typeof value === "string"
-                    ) {
-                        try {
-                            value = JSON.parse(value);
-                        } catch (_) {
-                            // plain string
-                        }
-                    }
+                            try {
 
-                    resolve(value);
-                });
-        } catch (error) {
-            if (done) return;
+                                if (
+                                    response &&
+                                    typeof response.json ===
+                                    "function"
+                                ) {
 
-            done = true;
+                                    const data =
+                                        await response.json();
 
-            clearTimeout(timeout);
+                                    let value =
+                                        data.value;
 
-            reject(error);
+                                    if (
+                                        typeof value ===
+                                        "string"
+                                    ) {
+
+                                        try {
+
+                                            value =
+                                                JSON.parse(
+                                                    value
+                                                );
+
+                                        } catch (_) {}
+
+                                    }
+
+                                    resolve(
+                                        value
+                                    );
+
+                                }
+
+                            } catch (
+                                error
+                            ) {
+
+                                reject(
+                                    error
+                                );
+
+                            }
+
+                        })
+                        .catch(
+                            reject
+                        );
+
+                }
+
+            } catch (error) {
+
+                reject(error);
+
+            }
+
         }
-    });
+    );
+
 }
 
 
@@ -424,163 +584,164 @@ async function dbRead(key) {
    PREFSDB WRITE
    ========================================================= */
 
-async function dbWrite(key, value) {
-    await refreshPrefsKey();
+async function dbWrite(
+    key,
+    value
+) {
 
-    return new Promise((resolve, reject) => {
-        let done = false;
+    await getPrefsToken();
 
-        const timeout = setTimeout(() => {
-            if (done) return;
+    const serialized =
+        JSON.stringify(
+            value
+        );
 
-            done = true;
+    return new Promise(
+        (resolve, reject) => {
 
-            reject(
-                new Error(
-                    "ذخیره اطلاعات در PrefsDB زمان‌بر شد."
-                )
-            );
-        }, 20000);
+            try {
 
-        try {
-            prefs_us
-                .project(PREFS_PROJECT)
-                .key(key)
-                .post(
-                    value,
-                    response => {
-                        if (done) return;
+                const operation =
+                    prefs_us
+                        .domain(
+                            PREFS_DOMAIN
+                        )
+                        .key(key)
+                        .write(
+                            serialized
+                        );
 
-                        done = true;
 
-                        clearTimeout(timeout);
+                if (
+                    operation &&
+                    typeof operation.then ===
+                    "function"
+                ) {
 
-                        if (
-                            response &&
-                            (
-                                response.success === false ||
-                                response.status === "error"
-                            )
-                        ) {
-                            reject(
-                                new Error(
-                                    response.message ||
-                                    response.error ||
-                                    "خطا در ذخیره اطلاعات."
-                                )
-                            );
+                    operation
+                        .then(
+                            resolve
+                        )
+                        .catch(
+                            reject
+                        );
 
-                            return;
-                        }
+                } else {
 
-                        resolve(response || true);
-                    }
-                );
-        } catch (error) {
-            if (done) return;
+                    resolve(
+                        operation
+                    );
 
-            done = true;
+                }
 
-            clearTimeout(timeout);
+            } catch (error) {
 
-            reject(error);
+                reject(error);
+
+            }
+
         }
-    });
+    );
+
 }
 
 
 /* =========================================================
-   DATABASE QUEUE
-   ========================================================= */
-
-function queueDB(operation) {
-    const result =
-        dbQueue.then(operation);
-
-    dbQueue =
-        result.catch(() => {});
-
-    return result;
-}
-
-
-/* =========================================================
-   USERS
+   DATABASE
    ========================================================= */
 
 async function getUsers() {
-    const users = await dbRead("users");
 
-    if (!Array.isArray(users)) {
-        return [];
-    }
-
-    return users;
-}
-
-async function saveUsers(users) {
-    return queueDB(() =>
-        dbWrite("users", users)
-    );
-}
-
-
-/* =========================================================
-   CHATS
-   ========================================================= */
-
-async function getChats() {
-    const chats = await dbRead("chats");
-
-    if (!Array.isArray(chats)) {
-        return [];
-    }
-
-    return chats;
-}
-
-async function saveChats(chats) {
-    return queueDB(() =>
-        dbWrite("chats", chats)
-    );
-}
-
-
-/* =========================================================
-   MESSAGES
-   ========================================================= */
-
-function messageKey(chatId) {
-    return "messages_" + chatId;
-}
-
-async function getMessages(chatId) {
-    if (!chatId) {
-        return [];
-    }
-
-    const messages =
+    const result =
         await dbRead(
-            messageKey(chatId)
+            "users"
         );
 
-    if (!Array.isArray(messages)) {
-        return [];
-    }
+    return Array.isArray(result)
+        ? result
+        : [];
 
-    return messages;
 }
+
+
+async function saveUsers(
+    users
+) {
+
+    return dbWrite(
+        "users",
+        users
+    );
+
+}
+
+
+async function getChats() {
+
+    const result =
+        await dbRead(
+            "chats"
+        );
+
+    return Array.isArray(result)
+        ? result
+        : [];
+
+}
+
+
+async function saveChats(
+    chats
+) {
+
+    return dbWrite(
+        "chats",
+        chats
+    );
+
+}
+
+
+function messagesKey(
+    chatId
+) {
+
+    return (
+        "messages_" +
+        chatId
+    );
+
+}
+
+
+async function getMessages(
+    chatId
+) {
+
+    const result =
+        await dbRead(
+            messagesKey(
+                chatId
+            )
+        );
+
+    return Array.isArray(result)
+        ? result
+        : [];
+
+}
+
 
 async function saveMessages(
     chatId,
     messages
 ) {
-    return queueDB(() =>
-        dbWrite(
-            messageKey(chatId),
-            messages
-        )
+
+    return dbWrite(
+        messagesKey(chatId),
+        messages
     );
+
 }
 
 
@@ -588,34 +749,42 @@ async function saveMessages(
    PASSWORD HASH
    ========================================================= */
 
-async function hashPassword(password) {
+async function hashPassword(
+    password
+) {
+
     const value =
         String(password || "");
 
     if (
-        typeof crypto !== "undefined" &&
-        crypto.subtle &&
-        typeof TextEncoder !== "undefined"
+        window.crypto &&
+        crypto.subtle
     ) {
-        const data =
-            new TextEncoder().encode(value);
 
-        const buffer =
+        const data =
+            new TextEncoder()
+                .encode(value);
+
+        const hash =
             await crypto.subtle.digest(
                 "SHA-256",
                 data
             );
 
         return Array.from(
-            new Uint8Array(buffer)
+            new Uint8Array(hash)
         )
             .map(
                 byte =>
                     byte
                         .toString(16)
-                        .padStart(2, "0")
+                        .padStart(
+                            2,
+                            "0"
+                        )
             )
             .join("");
+
     }
 
     let hash = 0;
@@ -625,16 +794,21 @@ async function hashPassword(password) {
         i < value.length;
         i++
     ) {
+
         hash =
             (
-                (hash << 5) -
+                (
+                    hash << 5
+                ) -
                 hash +
                 value.charCodeAt(i)
             ) |
             0;
+
     }
 
     return String(hash);
+
 }
 
 
@@ -642,39 +816,58 @@ async function hashPassword(password) {
    SESSION
    ========================================================= */
 
-function saveSession(userId) {
+function saveSession(
+    userId
+) {
+
     sessionStorage.setItem(
         SESSION_KEY,
         userId
     );
+
 }
 
+
 function getSession() {
+
     return sessionStorage.getItem(
         SESSION_KEY
     );
+
 }
 
+
 function clearSession() {
+
     sessionStorage.removeItem(
         SESSION_KEY
     );
+
 }
 
 
 /* =========================================================
-   FIND USERS
+   USER HELPERS
    ========================================================= */
 
-function findUserById(id) {
+function findUserById(
+    id
+) {
+
     return (
         usersCache.find(
-            user => user.id === id
+            user =>
+                user.id === id
         ) || null
     );
+
 }
 
-function findUserByEmail(email) {
+
+function findUserByEmail(
+    email
+) {
+
     const normalized =
         normalizeEmail(email);
 
@@ -686,113 +879,73 @@ function findUserByEmail(email) {
                 ) === normalized
         ) || null
     );
+
 }
 
 
 /* =========================================================
-   PAGE SWITCHING
+   AUTH UI
    ========================================================= */
+
+function showLogin() {
+
+    $("#loginBox")
+        ?.classList.remove(
+            "hidden"
+        );
+
+    $("#registerBox")
+        ?.classList.add(
+            "hidden"
+        );
+
+}
+
+
+function showRegister() {
+
+    $("#loginBox")
+        ?.classList.add(
+            "hidden"
+        );
+
+    $("#registerBox")
+        ?.classList.remove(
+            "hidden"
+        );
+
+}
+
 
 function showAuthPage() {
-    const auth =
-        $("#authPage");
 
-    const app =
-        $("#appPage");
+    $("#authPage")
+        ?.classList.remove(
+            "hidden"
+        );
 
-    if (auth) {
-        auth.classList.remove("hidden");
-    }
+    $("#appPage")
+        ?.classList.add(
+            "hidden"
+        );
 
-    if (app) {
-        app.classList.add("hidden");
-    }
 }
+
 
 function showAppPage() {
-    const auth =
-        $("#authPage");
 
-    const app =
-        $("#appPage");
+    $("#authPage")
+        ?.classList.add(
+            "hidden"
+        );
 
-    if (auth) {
-        auth.classList.add("hidden");
-    }
-
-    if (app) {
-        app.classList.remove("hidden");
-    }
+    $("#appPage")
+        ?.classList.remove(
+            "hidden"
+        );
 
     updateProfileUI();
-}
 
-
-/* =========================================================
-   PROFILE UI
-   ========================================================= */
-
-function updateProfileUI() {
-    if (!currentUser) return;
-
-    const name =
-        currentUser.name || "کاربر";
-
-    const avatar =
-        getInitial(name);
-
-    const sidebarName =
-        $("#sidebarUserName");
-
-    const sidebarAvatar =
-        $("#sidebarAvatar");
-
-    const profileName =
-        $("#profileName");
-
-    const profileEmail =
-        $("#profileEmail");
-
-    const profileAvatar =
-        $("#profileAvatar");
-
-    const profileId =
-        $("#profileId");
-
-    const profileStatus =
-        $("#profileStatus");
-
-    if (sidebarName) {
-        sidebarName.textContent = name;
-    }
-
-    if (sidebarAvatar) {
-        sidebarAvatar.textContent = avatar;
-    }
-
-    if (profileName) {
-        profileName.textContent = name;
-    }
-
-    if (profileEmail) {
-        profileEmail.textContent =
-            currentUser.email;
-    }
-
-    if (profileAvatar) {
-        profileAvatar.textContent =
-            avatar;
-    }
-
-    if (profileId) {
-        profileId.textContent =
-            currentUser.id;
-    }
-
-    if (profileStatus) {
-        profileStatus.textContent =
-            "فعال";
-    }
 }
 
 
@@ -801,118 +954,116 @@ function updateProfileUI() {
    ========================================================= */
 
 async function registerUser() {
-    const nameInput =
-        $("#registerName");
 
-    const emailInput =
-        $("#registerEmail");
+    const name =
+        normalizeName(
+            $("#registerName")?.value
+        );
 
-    const passwordInput =
-        $("#registerPassword");
+    const email =
+        normalizeEmail(
+            $("#registerEmail")?.value
+        );
 
-    const password2Input =
-        $("#registerPassword2");
+    const password =
+        $("#registerPassword")?.value || "";
+
+    const password2 =
+        $("#registerPassword2")?.value || "";
+
 
     if (
-        !nameInput ||
-        !emailInput ||
-        !passwordInput ||
-        !password2Input
+        name.length < 2
     ) {
+
         showToast(
-            "فرم ثبت‌نام پیدا نشد.",
+            "نام را درست وارد کنید.",
             "error"
         );
 
         return;
     }
 
-    const name =
-        normalizeName(
-            nameInput.value
-        );
 
-    const email =
-        normalizeEmail(
-            emailInput.value
-        );
+    if (!email.includes("@")) {
 
-    const password =
-        String(
-            passwordInput.value || ""
-        );
-
-    const password2 =
-        String(
-            password2Input.value || ""
-        );
-
-    if (name.length < 2) {
-        showToast(
-            "نام باید حداقل ۲ کاراکتر باشد.",
-            "warning"
-        );
-
-        return;
-    }
-
-    if (
-        !email ||
-        !email.includes("@") ||
-        !email.includes(".")
-    ) {
         showToast(
             "ایمیل معتبر وارد کنید.",
-            "warning"
+            "error"
         );
 
         return;
     }
 
-    if (password.length < 8) {
+
+    if (
+        password.length < 4
+    ) {
+
         showToast(
-            "رمز عبور باید حداقل ۸ کاراکتر باشد.",
-            "warning"
+            "رمز عبور باید حداقل ۴ کاراکتر باشد.",
+            "error"
         );
 
         return;
     }
 
-    if (password !== password2) {
+
+    if (
+        password !== password2
+    ) {
+
         showToast(
-            "تکرار رمز عبور صحیح نیست.",
-            "warning"
+            "تکرار رمز عبور یکسان نیست.",
+            "error"
         );
 
         return;
     }
+
 
     try {
+
         showLoading(
             "در حال ساخت حساب..."
         );
 
+
         usersCache =
             await getUsers();
 
-        const existing =
-            findUserByEmail(email);
 
-        if (existing) {
-            if (!existing.deleted) {
-                hideLoading();
+        const oldUser =
+            findUserByEmail(
+                email
+            );
 
-                showToast(
-                    "این ایمیل قبلاً ثبت شده است.",
-                    "error"
-                );
 
-                return;
-            }
+        if (
+            oldUser &&
+            oldUser.deleted !== true
+        ) {
+
+            hideLoading();
+
+            showToast(
+                "این ایمیل قبلاً ثبت شده است.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (
+            oldUser &&
+            oldUser.deleted === true
+        ) {
 
             const deletedAt =
                 Number(
-                    existing.deletedAt || 0
+                    oldUser.deletedAt ||
+                    0
                 );
 
             const threeDays =
@@ -922,81 +1073,117 @@ async function registerUser() {
                 60 *
                 1000;
 
+
             if (
-                deletedAt &&
-                timestamp() - deletedAt <
+                Date.now() -
+                deletedAt <
                 threeDays
             ) {
+
                 hideLoading();
 
                 showToast(
-                    "تا ۳ روز پس از حذف حساب نمی‌توانید با این ایمیل ثبت‌نام کنید.",
+                    "این ایمیل تا چند روز قابل استفاده مجدد نیست.",
                     "error"
                 );
 
                 return;
             }
 
-            usersCache =
-                usersCache.filter(
-                    user =>
-                        user.id !==
-                        existing.id
-                );
         }
+
 
         const passwordHash =
             await hashPassword(
                 password
             );
 
+
         const user = {
-            id: generateId("user"),
+
+            id:
+                generateId(
+                    "user"
+                ),
+
             name,
+
             email,
-            passwordHash,
-            createdAt: timestamp(),
-            deleted: false,
-            deletedAt: null,
-            avatar: null
+
+            password:
+                passwordHash,
+
+            createdAt:
+                Date.now(),
+
+            deleted:
+                false,
+
+            deletedAt:
+                null
+
         };
 
-        usersCache.push(user);
+
+        usersCache =
+            usersCache.filter(
+                item =>
+                    item.email !==
+                    email
+            );
+
+
+        usersCache.push(
+            user
+        );
+
 
         await saveUsers(
             usersCache
         );
 
-        currentUser = user;
 
         saveSession(
-            currentUser.id
+            user.id
         );
+
+
+        currentUser =
+            user;
+
 
         hideLoading();
 
         showAppPage();
 
-        clearRegisterForm();
-
         await loadChats();
 
         showToast(
-            "حساب با موفقیت ساخته شد.",
+            "حساب شما با موفقیت ساخته شد.",
             "success"
         );
 
+
+        $("#registerForm")
+            ?.reset();
+
+
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            error
+        );
 
         hideLoading();
 
         showToast(
-            "ثبت‌نام انجام نشد: " +
-            (error.message || ""),
+            "خطا در ثبت‌نام: " +
+            error.message,
             "error"
         );
+
     }
+
 }
 
 
@@ -1005,66 +1192,66 @@ async function registerUser() {
    ========================================================= */
 
 async function loginUser() {
-    const emailInput =
-        $("#loginEmail");
 
-    const passwordInput =
-        $("#loginPassword");
+    const email =
+        normalizeEmail(
+            $("#loginEmail")?.value
+        );
+
+    const password =
+        $("#loginPassword")?.value || "";
+
 
     if (
-        !emailInput ||
-        !passwordInput
+        !email ||
+        !password
     ) {
+
         showToast(
-            "فرم ورود پیدا نشد.",
+            "ایمیل و رمز عبور را وارد کنید.",
             "error"
         );
 
         return;
     }
 
-    const email =
-        normalizeEmail(
-            emailInput.value
-        );
-
-    const password =
-        String(
-            passwordInput.value || ""
-        );
-
-    if (!email || !password) {
-        showToast(
-            "ایمیل و رمز عبور را وارد کنید.",
-            "warning"
-        );
-
-        return;
-    }
 
     try {
+
         showLoading(
             "در حال ورود..."
         );
 
+
         usersCache =
             await getUsers();
 
-        const user =
-            findUserByEmail(email);
 
-        if (!user) {
+        const user =
+            findUserByEmail(
+                email
+            );
+
+
+        if (
+            !user
+        ) {
+
             hideLoading();
 
             showToast(
-                "ایمیل یا رمز عبور اشتباه است.",
+                "حسابی با این ایمیل پیدا نشد.",
                 "error"
             );
 
             return;
         }
 
-        if (user.deleted) {
+
+        if (
+            user.deleted
+        ) {
+
             hideLoading();
 
             showToast(
@@ -1075,15 +1262,18 @@ async function loginUser() {
             return;
         }
 
-        const hash =
+
+        const passwordHash =
             await hashPassword(
                 password
             );
 
+
         if (
-            hash !==
-            user.passwordHash
+            passwordHash !==
+            user.password
         ) {
+
             hideLoading();
 
             showToast(
@@ -1094,37 +1284,49 @@ async function loginUser() {
             return;
         }
 
-        currentUser = user;
+
+        currentUser =
+            user;
+
 
         saveSession(
-            currentUser.id
+            user.id
         );
+
 
         hideLoading();
 
         showAppPage();
 
-        clearLoginForm();
-
         await loadChats();
 
         showToast(
             "خوش آمدید " +
-            currentUser.name,
+            user.name,
             "success"
         );
 
+
+        $("#loginForm")
+            ?.reset();
+
+
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            error
+        );
 
         hideLoading();
 
         showToast(
-            "ورود انجام نشد: " +
-            (error.message || ""),
+            "خطا در ورود: " +
+            error.message,
             "error"
         );
+
     }
+
 }
 
 
@@ -1132,199 +1334,148 @@ async function loginUser() {
    LOGOUT
    ========================================================= */
 
-function logoutUser() {
+function logout() {
+
     stopPolling();
 
-    currentUser = null;
-    currentChat = null;
+    currentUser =
+        null;
+
+    currentChat =
+        null;
 
     clearSession();
 
     showAuthPage();
 
-    showToast(
-        "از حساب خارج شدید.",
-        "success"
-    );
+    showLogin();
+
 }
 
 
 /* =========================================================
-   CLEAR FORMS
+   PROFILE
    ========================================================= */
 
-function clearLoginForm() {
-    const email =
-        $("#loginEmail");
+function updateProfileUI() {
 
-    const password =
-        $("#loginPassword");
-
-    if (email) {
-        email.value = "";
+    if (
+        !currentUser
+    ) {
+        return;
     }
 
-    if (password) {
-        password.value = "";
-    }
-}
 
-function clearRegisterForm() {
     const name =
-        $("#registerName");
+        currentUser.name ||
+        "کاربر";
 
-    const email =
-        $("#registerEmail");
 
-    const password =
-        $("#registerPassword");
+    const initial =
+        getInitial(name);
 
-    const password2 =
-        $("#registerPassword2");
 
-    if (name) name.value = "";
-    if (email) email.value = "";
-    if (password) password.value = "";
-    if (password2) password2.value = "";
+    const sidebarAvatar =
+        $("#sidebarAvatar");
+
+    const sidebarUserName =
+        $("#sidebarUserName");
+
+
+    if (
+        sidebarAvatar
+    ) {
+
+        sidebarAvatar.textContent =
+            initial;
+
+    }
+
+
+    if (
+        sidebarUserName
+    ) {
+
+        sidebarUserName.textContent =
+            name;
+
+    }
+
+
+    const profileAvatar =
+        $("#profileAvatar");
+
+    const profileName =
+        $("#profileName");
+
+    const profileEmail =
+        $("#profileEmail");
+
+    const profileId =
+        $("#profileId");
+
+
+    if (
+        profileAvatar
+    ) {
+
+        profileAvatar.textContent =
+            initial;
+
+    }
+
+
+    if (
+        profileName
+    ) {
+
+        profileName.textContent =
+            name;
+
+    }
+
+
+    if (
+        profileEmail
+    ) {
+
+        profileEmail.textContent =
+            currentUser.email;
+
+    }
+
+
+    if (
+        profileId
+    ) {
+
+        profileId.textContent =
+            currentUser.id;
+
+    }
+
 }
 
 
 /* =========================================================
-   PRIVATE CHAT ID
+   CHAT ID
    ========================================================= */
 
-function createPrivateChatId(
+function privateChatId(
     userA,
     userB
 ) {
-    const ids = [
-        String(userA),
-        String(userB)
-    ].sort();
 
     return (
         "private_" +
-        ids[0] +
-        "_" +
-        ids[1]
-    );
-}
-
-
-/* =========================================================
-   GET OTHER CHAT MEMBER
-   ========================================================= */
-
-function getOtherMember(chat) {
-    if (
-        !chat ||
-        !currentUser ||
-        !Array.isArray(chat.members)
-    ) {
-        return null;
-    }
-
-    const otherId =
-        chat.members.find(
-            id =>
-                id !==
-                currentUser.id
-        );
-
-    return findUserById(
-        otherId
-    );
-}
-
-
-/* =========================================================
-   CREATE PRIVATE CHAT
-   ========================================================= */
-
-async function createPrivateChat(
-    otherUser
-) {
-    if (!currentUser) {
-        return null;
-    }
-
-    if (!otherUser) {
-        showToast(
-            "کاربر پیدا نشد.",
-            "error"
-        );
-
-        return null;
-    }
-
-    if (otherUser.deleted) {
-        showToast(
-            "این حساب حذف شده است.",
-            "error"
-        );
-
-        return null;
-    }
-
-    if (
-        otherUser.id ===
-        currentUser.id
-    ) {
-        showToast(
-            "نمی‌توانید با خودتان گفتگو کنید.",
-            "warning"
-        );
-
-        return null;
-    }
-
-    chatsCache =
-        await getChats();
-
-    const chatId =
-        createPrivateChatId(
-            currentUser.id,
-            otherUser.id
-        );
-
-    let chat =
-        chatsCache.find(
-            item =>
-                item.id ===
-                chatId
-        );
-
-    if (!chat) {
-        chat = {
-            id: chatId,
-            type: "private",
-            members: [
-                currentUser.id,
-                otherUser.id
-            ],
-            createdAt: timestamp(),
-            updatedAt: timestamp(),
-            lastMessage: "",
-            lastMessageAt: null,
-            locked: false
-        };
-
-        chatsCache.push(chat);
-
-        await saveChats(
-            chatsCache
-        );
-    }
-
-    currentChat = chat;
-
-    await loadChats();
-
-    await openChat(
-        chat.id
+        [
+            userA,
+            userB
+        ]
+            .sort()
+            .join("_")
     );
 
-    return chat;
 }
 
 
@@ -1333,67 +1484,76 @@ async function createPrivateChat(
    ========================================================= */
 
 async function loadChats() {
-    if (!currentUser) {
+
+    if (
+        !currentUser
+    ) {
         return;
     }
 
+
     try {
+
         chatsCache =
             await getChats();
 
-        const myChats =
-            chatsCache
-                .filter(chat => {
-                    if (!chat) {
-                        return false;
-                    }
 
-                    if (
-                        chat.type !==
-                        "private"
-                    ) {
-                        return false;
-                    }
-
-                    return (
-                        Array.isArray(
-                            chat.members
-                        ) &&
-                        chat.members.includes(
-                            currentUser.id
-                        )
-                    );
-                })
-                .sort(
-                    (a, b) =>
-                        Number(
-                            b.updatedAt || 0
-                        ) -
-                        Number(
-                            a.updatedAt || 0
-                        )
-                );
-
-        renderChatList(
-            myChats
-        );
+        renderChatList();
 
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            error
+        );
 
         showToast(
             "خطا در دریافت گفتگوها.",
             "error"
         );
+
     }
+
 }
 
 
 /* =========================================================
-   RENDER CHAT LIST
+   CHAT LIST
    ========================================================= */
 
-function renderChatList(chats) {
+function getMyChats() {
+
+    if (
+        !currentUser
+    ) {
+        return [];
+    }
+
+
+    return chatsCache
+        .filter(
+            chat =>
+                Array.isArray(
+                    chat.members
+                ) &&
+                chat.members.includes(
+                    currentUser.id
+                )
+        )
+        .sort(
+            (a, b) =>
+                Number(
+                    b.updatedAt || 0
+                ) -
+                Number(
+                    a.updatedAt || 0
+                )
+        );
+
+}
+
+
+function renderChatList() {
+
     const list =
         $("#chatList");
 
@@ -1401,147 +1561,262 @@ function renderChatList(chats) {
         return;
     }
 
+
     if (
-        currentTab !==
-        "private"
+        currentTab !== "private"
     ) {
+
         list.innerHTML = `
-            <div class="empty-chat-list">
-                <div class="empty-icon">+</div>
-                <p>این بخش به‌زودی فعال می‌شود</p>
-                <small>
-                    گروه‌ها و کانال‌ها در نسخه بعدی گفتینو اضافه خواهند شد.
-                </small>
+            <div class="emptyList">
+                این بخش به‌زودی فعال می‌شود.
             </div>
         `;
 
         return;
     }
 
-    if (!chats.length) {
+
+    const chats =
+        getMyChats();
+
+
+    if (
+        chats.length === 0
+    ) {
+
         list.innerHTML = `
-            <div class="empty-chat-list">
-                <div class="empty-icon">💬</div>
-                <p>هنوز گفتگویی ندارید</p>
-                <small>
-                    برای شروع یک کاربر را جستجو کنید.
-                </small>
+            <div class="emptyList">
+                هنوز گفتگویی ندارید.<br>
+                از قسمت جستجو یک کاربر پیدا کنید.
             </div>
         `;
 
         return;
     }
+
 
     list.innerHTML =
         chats
-            .map(chat => {
-                const user =
-                    getOtherMember(
-                        chat
-                    );
+            .map(
+                chat => {
 
-                if (!user) {
-                    return "";
-                }
+                    const otherId =
+                        chat.members.find(
+                            id =>
+                                id !==
+                                currentUser.id
+                        );
 
-                const deleted =
-                    isDeletedUser(
-                        user
-                    );
 
-                const active =
-                    currentChat &&
-                    currentChat.id ===
-                    chat.id;
+                    const other =
+                        findUserById(
+                            otherId
+                        );
 
-                const title =
-                    deleted
-                        ? "حساب حذف‌شده"
-                        : user.name;
 
-                let preview =
-                    chat.lastMessage ||
-                    "شروع گفتگو";
+                    if (!other) {
+                        return "";
+                    }
 
-                if (
-                    deleted ||
-                    chat.locked
-                ) {
-                    preview =
-                        "گفتگو قفل شده";
-                }
 
-                return `
-                    <div
-                        class="chat-item ${
-                            active
-                                ? "active"
-                                : ""
-                        }"
-                        data-chat-id="${escapeHTML(
-                            chat.id
-                        )}"
-                    >
+                    const active =
+                        currentChat &&
+                        currentChat.id ===
+                        chat.id
+                            ? "active"
+                            : "";
 
-                        <div class="avatar">
-                            ${
-                                deleted
-                                    ? "👻"
-                                    : escapeHTML(
-                                          getInitial(
-                                              user.name
-                                          )
-                                      )
-                            }
-                        </div>
 
-                        <div class="chat-item-info">
+                    const locked =
+                        chat.locked
+                            ? " 🔒"
+                            : "";
 
-                            <div class="chat-item-top">
 
-                                <span class="chat-name">
-                                    ${escapeHTML(
-                                        title
-                                    )}
-                                </span>
+                    return `
+                        <div
+                            class="chatItem ${active}"
+                            data-chat-id="${escapeHTML(chat.id)}"
+                        >
 
-                                <span class="chat-time">
-                                    ${
-                                        chat.lastMessageAt
-                                            ? formatTime(
-                                                  chat.lastMessageAt
-                                              )
-                                            : ""
-                                    }
-                                </span>
-
-                            </div>
-
-                            <div class="chat-preview">
+                            <div class="avatar">
                                 ${escapeHTML(
-                                    preview
+                                    getInitial(
+                                        other.name
+                                    )
                                 )}
                             </div>
 
-                        </div>
+                            <div class="chatItemInfo">
 
-                    </div>
-                `;
-            })
+                                <div class="chatItemTop">
+
+                                    <span class="chatItemName">
+                                        ${escapeHTML(
+                                            other.name
+                                        )}${locked}
+                                    </span>
+
+                                    <span class="chatItemTime">
+                                        ${formatTime(
+                                            chat.updatedAt
+                                        )}
+                                    </span>
+
+                                </div>
+
+                                <div class="chatPreview">
+                                    ${escapeHTML(
+                                        chat.lastMessage ||
+                                        "گفتگوی جدید"
+                                    )}
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
             .join("");
 
+
     $all(
-        "#chatList .chat-item"
-    ).forEach(item => {
-        item.addEventListener(
-            "click",
-            async () => {
-                await openChat(
-                    item.dataset.chatId
-                );
-            }
+        ".chatItem"
+    ).forEach(
+        item => {
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    const chat =
+                        chatsCache.find(
+                            c =>
+                                c.id ===
+                                item.dataset.chatId
+                        );
+
+
+                    if (chat) {
+                        openChat(
+                            chat
+                        );
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CREATE PRIVATE CHAT
+   ========================================================= */
+
+async function startPrivateChat(
+    otherUser
+) {
+
+    if (
+        !currentUser ||
+        !otherUser
+    ) {
+        return;
+    }
+
+
+    const chatId =
+        privateChatId(
+            currentUser.id,
+            otherUser.id
         );
-    });
+
+
+    try {
+
+        chatsCache =
+            await getChats();
+
+
+        let chat =
+            chatsCache.find(
+                item =>
+                    item.id ===
+                    chatId
+            );
+
+
+        if (!chat) {
+
+            chat = {
+
+                id:
+                    chatId,
+
+                type:
+                    "private",
+
+                members: [
+                    currentUser.id,
+                    otherUser.id
+                ],
+
+                createdAt:
+                    Date.now(),
+
+                updatedAt:
+                    Date.now(),
+
+                lastMessage:
+                    "",
+
+                locked:
+                    false
+
+            };
+
+
+            chatsCache.push(
+                chat
+            );
+
+
+            await saveChats(
+                chatsCache
+            );
+
+        }
+
+
+        closeSearch();
+
+        await openChat(
+            chat
+        );
+
+
+        renderChatList();
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+        showToast(
+            "خطا در ساخت گفتگو: " +
+            error.message,
+            "error"
+        );
+
+    }
+
 }
 
 
@@ -1550,281 +1825,143 @@ function renderChatList(chats) {
    ========================================================= */
 
 async function openChat(
-    chatOrId
+    chat
 ) {
-    let chat = null;
 
     if (
-        typeof chatOrId ===
-        "string"
+        !chat ||
+        !currentUser
     ) {
-        chat =
-            chatsCache.find(
-                item =>
-                    item.id ===
-                    chatOrId
-            ) || null;
-    } else {
-        chat = chatOrId;
+        return;
     }
 
-    if (!chat) {
-        chatsCache =
-            await getChats();
 
-        chat =
-            chatsCache.find(
-                item =>
-                    item.id ===
-                    chatOrId
-            ) || null;
-    }
+    currentChat =
+        chat;
 
-    if (!chat) {
+
+    const otherId =
+        chat.members.find(
+            id =>
+                id !==
+                currentUser.id
+        );
+
+
+    const other =
+        findUserById(
+            otherId
+        );
+
+
+    if (!other) {
+
         showToast(
-            "گفتگو پیدا نشد.",
+            "کاربر پیدا نشد.",
             "error"
         );
 
         return;
     }
 
-    currentChat = chat;
 
-    renderChatHeader(
-        chat
-    );
-
-    showChatInterface();
-
-    await loadMessages(
-        chat.id
-    );
-
-    startPolling();
-
-    await loadChats();
-}
-
-
-/* =========================================================
-   CHAT HEADER
-   ========================================================= */
-
-function renderChatHeader(
-    chat
-) {
-    const user =
-        getOtherMember(
-            chat
+    $("#chatHeaderEmpty")
+        ?.classList.add(
+            "hidden"
         );
 
-    const empty =
-        $("#chatHeaderEmpty");
 
-    const headerUser =
-        $("#chatHeaderUser");
+    $("#chatHeaderUser")
+        ?.classList.remove(
+            "hidden"
+        );
 
-    const actions =
-        $("#chatHeaderActions");
 
-    const avatar =
+    $("#welcomeChat")
+        ?.classList.add(
+            "hidden"
+        );
+
+
+    $("#messagesContainer")
+        ?.classList.remove(
+            "hidden"
+        );
+
+
+    $("#messageArea")
+        ?.classList.remove(
+            "hidden"
+        );
+
+
+    const headerAvatar =
         $("#chatHeaderAvatar");
 
-    const name =
+    const headerName =
         $("#chatHeaderName");
 
-    const status =
+    const headerStatus =
         $("#chatHeaderStatus");
 
-    if (!user) {
-        return;
-    }
 
-    if (empty) {
-        empty.classList.add(
-            "hidden"
-        );
-    }
+    if (
+        headerAvatar
+    ) {
 
-    if (headerUser) {
-        headerUser.classList.remove(
-            "hidden"
-        );
-    }
-
-    if (actions) {
-        actions.classList.remove(
-            "hidden"
-        );
-    }
-
-    const deleted =
-        isDeletedUser(
-            user
-        );
-
-    if (avatar) {
-        avatar.textContent =
-            deleted
-                ? "👻"
-                : getInitial(
-                      user.name
-                  );
-    }
-
-    if (name) {
-        name.textContent =
-            deleted
-                ? "حساب حذف‌شده"
-                : user.name;
-    }
-
-    if (status) {
-        if (deleted) {
-            status.textContent =
-                "این حساب حذف شده است";
-        } else if (
-            chat.locked
-        ) {
-            status.textContent =
-                "گفتگو قفل شده";
-        } else {
-            status.textContent =
-                "در دسترس";
-        }
-    }
-}
-
-
-/* =========================================================
-   SHOW CHAT INTERFACE
-   ========================================================= */
-
-function showChatInterface() {
-    const welcome =
-        $("#welcomeChat");
-
-    const messages =
-        $("#messagesContainer");
-
-    const messageArea =
-        $("#messageArea");
-
-    if (welcome) {
-        welcome.classList.add(
-            "hidden"
-        );
-    }
-
-    if (messages) {
-        messages.classList.remove(
-            "hidden"
-        );
-    }
-
-    if (messageArea) {
-        messageArea.classList.remove(
-            "hidden"
-        );
-    }
-}
-
-
-/* =========================================================
-   HIDE CHAT INTERFACE
-   ========================================================= */
-
-function hideChatInterface() {
-    const welcome =
-        $("#welcomeChat");
-
-    const messages =
-        $("#messagesContainer");
-
-    const messageArea =
-        $("#messageArea");
-
-    const headerUser =
-        $("#chatHeaderUser");
-
-    const actions =
-        $("#chatHeaderActions");
-
-    const headerEmpty =
-        $("#chatHeaderEmpty");
-
-    if (welcome) {
-        welcome.classList.remove(
-            "hidden"
-        );
-    }
-
-    if (messages) {
-        messages.classList.add(
-            "hidden"
-        );
-    }
-
-    if (messageArea) {
-        messageArea.classList.add(
-            "hidden"
-        );
-    }
-
-    if (headerUser) {
-        headerUser.classList.add(
-            "hidden"
-        );
-    }
-
-    if (actions) {
-        actions.classList.add(
-            "hidden"
-        );
-    }
-
-    if (headerEmpty) {
-        headerEmpty.classList.remove(
-            "hidden"
-        );
-    }
-}
-
-
-/* =========================================================
-   LOAD MESSAGES
-   ========================================================= */
-
-async function loadMessages(
-    chatId
-) {
-    const container =
-        $("#messagesContainer");
-
-    if (!container) {
-        return;
-    }
-
-    try {
-        const messages =
-            await getMessages(
-                chatId
+        headerAvatar.textContent =
+            getInitial(
+                other.name
             );
 
-        renderMessages(
-            messages
-        );
-
-    } catch (error) {
-        console.error(error);
-
-        container.innerHTML = `
-            <div class="empty-chat-list">
-                خطا در دریافت پیام‌ها.
-            </div>
-        `;
     }
+
+
+    if (
+        headerName
+    ) {
+
+        headerName.textContent =
+            other.name;
+
+    }
+
+
+    if (
+        headerStatus
+    ) {
+
+        headerStatus.textContent =
+            chat.locked
+                ? "گفتگو قفل شده"
+                : "کاربر گفتینو";
+
+    }
+
+
+    await renderMessages();
+
+
+    scrollMessages();
+
+
+    if (
+        window.innerWidth <=
+        750
+    ) {
+
+        $("#sidebar")
+            ?.classList.add(
+                "mobileHidden"
+            );
+
+        $("#mainArea")
+            ?.classList.remove(
+                "mobileHidden"
+            );
+
+    }
+
 }
 
 
@@ -1832,9 +1969,15 @@ async function loadMessages(
    RENDER MESSAGES
    ========================================================= */
 
-function renderMessages(
-    messages
-) {
+async function renderMessages() {
+
+    if (
+        !currentChat
+    ) {
+        return;
+    }
+
+
     const container =
         $("#messagesContainer");
 
@@ -1842,65 +1985,95 @@ function renderMessages(
         return;
     }
 
-    if (!messages.length) {
-        container.innerHTML = `
-            <div class="empty-chat-list">
-                <div class="empty-icon">💬</div>
-                <p>هنوز پیامی وجود ندارد</p>
-                <small>
-                    اولین پیام را ارسال کنید.
-                </small>
-            </div>
-        `;
 
-        return;
+    try {
+
+        const messages =
+            await getMessages(
+                currentChat.id
+            );
+
+
+        if (
+            messages.length === 0
+        ) {
+
+            container.innerHTML = `
+                <div
+                    style="
+                        text-align:center;
+                        color:#8c96a0;
+                        margin:auto;
+                        padding:30px;
+                    "
+                >
+                    هنوز پیامی وجود ندارد.<br>
+                    اولین پیام را شما ارسال کنید.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        container.innerHTML =
+            messages
+                .sort(
+                    (a, b) =>
+                        Number(
+                            a.createdAt
+                        ) -
+                        Number(
+                            b.createdAt
+                        )
+                )
+                .map(
+                    message => {
+
+                        const mine =
+                            message.senderId ===
+                            currentUser.id;
+
+
+                        return `
+                            <div
+                                class="messageRow ${
+                                    mine
+                                        ? "mine"
+                                        : "theirs"
+                                }"
+                            >
+
+                                <div class="messageBubble">
+
+                                    ${escapeHTML(
+                                        message.text
+                                    )}
+
+                                    <span class="messageTime">
+                                        ${formatTime(
+                                            message.createdAt
+                                        )}
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        `;
+
+                    }
+                )
+                .join("");
+
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
     }
 
-    container.innerHTML =
-        messages
-            .map(message => {
-                const mine =
-                    currentUser &&
-                    message.senderId ===
-                    currentUser.id;
-
-                return `
-                    <div
-                        class="message-row ${
-                            mine
-                                ? "message-me"
-                                : "message-other"
-                        }"
-                    >
-
-                        <div class="message-bubble">
-
-                            <div class="message-text">
-                                ${escapeHTML(
-                                    message.text
-                                ).replace(
-                                    /\n/g,
-                                    "<br>"
-                                )}
-                            </div>
-
-                            <div class="message-time">
-                                ${formatTime(
-                                    message.createdAt
-                                )}
-                            </div>
-
-                        </div>
-
-                    </div>
-                `;
-            })
-            .join("");
-
-    requestAnimationFrame(() => {
-        container.scrollTop =
-            container.scrollHeight;
-    });
 }
 
 
@@ -1909,18 +2082,27 @@ function renderMessages(
    ========================================================= */
 
 async function sendMessage() {
-    if (!currentUser) {
+
+    if (
+        !currentUser ||
+        !currentChat
+    ) {
         return;
     }
 
-    if (!currentChat) {
+
+    if (
+        currentChat.locked
+    ) {
+
         showToast(
-            "ابتدا یک گفتگو انتخاب کنید.",
-            "warning"
+            "این گفتگو قفل شده است.",
+            "error"
         );
 
         return;
     }
+
 
     const input =
         $("#messageInput");
@@ -1929,71 +2111,56 @@ async function sendMessage() {
         return;
     }
 
+
     const text =
-        String(
-            input.value || ""
-        ).trim();
+        input.value.trim();
+
 
     if (!text) {
         return;
     }
 
-    const otherUser =
-        getOtherMember(
-            currentChat
-        );
-
-    if (!otherUser) {
-        showToast(
-            "کاربر گفتگو پیدا نشد.",
-            "error"
-        );
-
-        return;
-    }
-
-    if (
-        otherUser.deleted ||
-        currentChat.locked
-    ) {
-        showToast(
-            "این گفتگو قفل شده و امکان ارسال پیام وجود ندارد.",
-            "warning"
-        );
-
-        return;
-    }
 
     try {
+
         const messages =
             await getMessages(
                 currentChat.id
             );
 
+
         const message = {
-            id: generateId("msg"),
-            chatId:
-                currentChat.id,
+
+            id:
+                generateId(
+                    "msg"
+                ),
+
             senderId:
                 currentUser.id,
-            receiverId:
-                otherUser.id,
+
             text,
+
             createdAt:
-                timestamp()
+                Date.now()
+
         };
+
 
         messages.push(
             message
         );
+
 
         await saveMessages(
             currentChat.id,
             messages
         );
 
+
         chatsCache =
             await getChats();
+
 
         const chatIndex =
             chatsCache.findIndex(
@@ -2002,9 +2169,11 @@ async function sendMessage() {
                     currentChat.id
             );
 
+
         if (
             chatIndex !== -1
         ) {
+
             chatsCache[
                 chatIndex
             ].lastMessage =
@@ -2012,247 +2181,422 @@ async function sendMessage() {
 
             chatsCache[
                 chatIndex
-            ].lastMessageAt =
-                message.createdAt;
-
-            chatsCache[
-                chatIndex
             ].updatedAt =
-                message.createdAt;
-
-            await saveChats(
-                chatsCache
-            );
+                Date.now();
 
             currentChat =
                 chatsCache[
                     chatIndex
                 ];
+
         }
+
+
+        await saveChats(
+            chatsCache
+        );
+
 
         input.value = "";
 
-        autoResizeTextarea();
 
-        renderMessages(
-            messages
-        );
+        await renderMessages();
 
-        await loadChats();
+        renderChatList();
+
+        scrollMessages();
+
 
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            error
+        );
 
         showToast(
-            "پیام ارسال نشد: " +
-            (error.message || ""),
+            "ارسال پیام ناموفق بود.",
             "error"
         );
+
     }
+
 }
 
 
 /* =========================================================
-   SEARCH USERS
+   SCROLL
    ========================================================= */
 
-let searchTimeout = null;
+function scrollMessages() {
+
+    const container =
+        $("#messagesContainer");
+
+    if (!container) {
+        return;
+    }
+
+
+    requestAnimationFrame(
+        () => {
+
+            container.scrollTop =
+                container.scrollHeight;
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
 
 async function searchUsers(
     query
 ) {
+
+    query =
+        normalizeName(
+            query
+        ).toLowerCase();
+
+
     const overlay =
         $("#searchOverlay");
 
     const results =
         $("#searchResults");
 
-    if (!overlay || !results) {
+
+    if (
+        !overlay ||
+        !results
+    ) {
         return;
     }
 
-    const value =
-        String(query || "")
-            .trim()
-            .toLowerCase();
 
-    if (!value) {
-        results.innerHTML = `
-            <div class="search-empty">
-                نام یا ایمیل کاربر را جستجو کنید.
-            </div>
-        `;
+    if (
+        query.length < 1
+    ) {
+
+        closeSearch();
 
         return;
     }
+
 
     try {
+
         usersCache =
             await getUsers();
 
-        const matches =
+
+        const found =
             usersCache.filter(
                 user => {
+
                     if (
-                        !user ||
+                        user.id ===
+                        currentUser?.id
+                    ) {
+                        return false;
+                    }
+
+
+                    if (
                         user.deleted
                     ) {
                         return false;
                     }
 
-                    if (
-                        currentUser &&
-                        user.id ===
-                        currentUser.id
-                    ) {
-                        return false;
-                    }
 
                     const name =
                         String(
-                            user.name || ""
+                            user.name ||
+                            ""
                         ).toLowerCase();
+
 
                     const email =
                         String(
-                            user.email || ""
+                            user.email ||
+                            ""
                         ).toLowerCase();
 
+
                     return (
-                        name.includes(value) ||
-                        email.includes(value)
+                        name.includes(
+                            query
+                        ) ||
+                        email.includes(
+                            query
+                        )
                     );
+
                 }
             )
-            .slice(0, 30);
+            .slice(
+                0,
+                20
+            );
 
-        if (!matches.length) {
+
+        if (
+            found.length === 0
+        ) {
+
             results.innerHTML = `
-                <div class="search-empty">
+                <div class="emptyList">
                     کاربری پیدا نشد.
                 </div>
             `;
 
-            return;
+        } else {
+
+            results.innerHTML =
+                found
+                    .map(
+                        user => `
+                            <div
+                                class="searchResult"
+                                data-user-id="${escapeHTML(
+                                    user.id
+                                )}"
+                            >
+
+                                <div class="avatar">
+                                    ${escapeHTML(
+                                        getInitial(
+                                            user.name
+                                        )
+                                    )}
+                                </div>
+
+                                <div>
+                                    <strong>
+                                        ${escapeHTML(
+                                            user.name
+                                        )}
+                                    </strong>
+
+                                    <div
+                                        style="
+                                            color:#8a949f;
+                                            font-size:12px;
+                                        "
+                                    >
+                                        ${escapeHTML(
+                                            user.email
+                                        )}
+                                    </div>
+                                </div>
+
+                            </div>
+                        `
+                    )
+                    .join("");
+
         }
 
-        results.innerHTML =
-            matches
-                .map(user => `
-                    <div
-                        class="search-user"
-                        data-user-id="${escapeHTML(
-                            user.id
-                        )}"
-                    >
 
-                        <div class="avatar">
-                            ${escapeHTML(
-                                getInitial(
-                                    user.name
-                                )
-                            )}
-                        </div>
+        overlay.classList.remove(
+            "hidden"
+        );
 
-                        <div class="search-user-info">
-
-                            <strong>
-                                ${escapeHTML(
-                                    user.name
-                                )}
-                            </strong>
-
-                            <span>
-                                ${escapeHTML(
-                                    user.email
-                                )}
-                            </span>
-
-                        </div>
-
-                        <button
-                            type="button"
-                            class="search-user-btn"
-                        >
-                            گفتگو
-                        </button>
-
-                    </div>
-                `)
-                .join("");
 
         $all(
-            ".search-user"
-        ).forEach(item => {
-            item.addEventListener(
-                "click",
-                async () => {
-                    const id =
-                        item.dataset.userId;
+            ".searchResult"
+        ).forEach(
+            item => {
 
-                    const user =
-                        findUserById(
-                            id
-                        );
+                item.addEventListener(
+                    "click",
+                    async () => {
 
-                    if (!user) {
-                        return;
+                        const user =
+                            findUserById(
+                                item.dataset.userId
+                            );
+
+
+                        if (
+                            user
+                        ) {
+
+                            await startPrivateChat(
+                                user
+                            );
+
+                        }
+
                     }
+                );
 
-                    closeSearch();
+            }
+        );
 
-                    await createPrivateChat(
-                        user
-                    );
-                }
-            );
-        });
 
     } catch (error) {
-        console.error(error);
 
-        results.innerHTML = `
-            <div class="search-empty">
-                خطا در جستجو.
-            </div>
-        `;
+        console.error(
+            error
+        );
+
+        showToast(
+            "خطا در جستجوی کاربران.",
+            "error"
+        );
+
     }
+
+}
+
+
+function closeSearch() {
+
+    $("#searchOverlay")
+        ?.classList.add(
+            "hidden"
+        );
+
 }
 
 
 /* =========================================================
-   SEARCH OPEN/CLOSE
+   CHAT INFO
    ========================================================= */
 
-function openSearch() {
-    const overlay =
-        $("#searchOverlay");
+function showChatInfo() {
 
-    if (!overlay) {
+    if (
+        !currentChat
+    ) {
         return;
     }
 
-    overlay.classList.remove(
-        "hidden"
+
+    const content =
+        $("#chatInfoContent");
+
+
+    if (!content) {
+        return;
+    }
+
+
+    const otherId =
+        currentChat.members.find(
+            id =>
+                id !==
+                currentUser.id
+        );
+
+
+    const other =
+        findUserById(
+            otherId
+        );
+
+
+    if (!other) {
+        return;
+    }
+
+
+    content.innerHTML = `
+
+        <div class="profileBig">
+
+            <div class="avatar">
+                ${escapeHTML(
+                    getInitial(
+                        other.name
+                    )
+                )}
+            </div>
+
+            <h3>
+                ${escapeHTML(
+                    other.name
+                )}
+            </h3>
+
+        </div>
+
+        <div class="profileInfo">
+
+            <small>
+                ایمیل
+            </small>
+
+            ${escapeHTML(
+                other.email
+            )}
+
+        </div>
+
+        <div class="profileInfo">
+
+            <small>
+                شناسه
+            </small>
+
+            ${escapeHTML(
+                other.id
+            )}
+
+        </div>
+
+        <div class="profileInfo">
+
+            <small>
+                تاریخ ساخت حساب
+            </small>
+
+            ${formatDate(
+                other.createdAt
+            )}
+
+        </div>
+
+    `;
+
+
+    openModal(
+        "chatInfoModal"
     );
 
-    const input =
-        $("#userSearch");
-
-    if (input) {
-        input.focus();
-    }
 }
 
-function closeSearch() {
-    const overlay =
-        $("#searchOverlay");
 
-    if (overlay) {
-        overlay.classList.add(
+/* =========================================================
+   MODALS
+   ========================================================= */
+
+function openModal(
+    id
+) {
+
+    $(`#${id}`)
+        ?.classList.remove(
             "hidden"
         );
-    }
+
+}
+
+
+function closeModal(
+    id
+) {
+
+    $(`#${id}`)
+        ?.classList.add(
+            "hidden"
+        );
+
 }
 
 
@@ -2261,17 +2605,24 @@ function closeSearch() {
    ========================================================= */
 
 async function deleteAccount() {
-    if (!currentUser) {
+
+    if (
+        !currentUser
+    ) {
         return;
     }
 
+
     try {
+
         showLoading(
             "در حال حذف حساب..."
         );
 
+
         usersCache =
             await getUsers();
+
 
         const index =
             usersCache.findIndex(
@@ -2280,86 +2631,94 @@ async function deleteAccount() {
                     currentUser.id
             );
 
-        if (index === -1) {
-            hideLoading();
 
-            showToast(
-                "حساب پیدا نشد.",
-                "error"
-            );
+        if (
+            index === -1
+        ) {
+
+            hideLoading();
 
             return;
         }
 
+
         usersCache[
             index
-        ].deleted = true;
+        ].deleted =
+            true;
+
 
         usersCache[
             index
         ].deletedAt =
-            timestamp();
+            Date.now();
+
 
         usersCache[
             index
         ].name =
             "حساب حذف‌شده";
 
-        usersCache[
-            index
-        ].avatar =
-            "ghost";
 
         await saveUsers(
             usersCache
         );
 
 
-        /* Lock all private chats */
         chatsCache =
             await getChats();
 
+
         let changed = false;
+
 
         chatsCache =
             chatsCache.map(
                 chat => {
+
                     if (
-                        chat.type ===
-                            "private" &&
-                        Array.isArray(
-                            chat.members
-                        ) &&
+                        chat.members &&
                         chat.members.includes(
                             currentUser.id
                         )
                     ) {
+
                         changed = true;
 
                         return {
                             ...chat,
-                            locked: true,
-                            updatedAt:
-                                timestamp()
+                            locked:
+                                true
                         };
+
                     }
 
+
                     return chat;
+
                 }
             );
 
-        if (changed) {
+
+        if (
+            changed
+        ) {
+
             await saveChats(
                 chatsCache
             );
+
         }
 
-        stopPolling();
-
-        currentUser = null;
-        currentChat = null;
 
         clearSession();
+
+        currentUser =
+            null;
+
+        currentChat =
+            null;
+
 
         closeModal(
             "deleteAccountModal"
@@ -2369,84 +2728,35 @@ async function deleteAccount() {
             "settingsModal"
         );
 
+
         hideLoading();
 
         showAuthPage();
+
+        showLogin();
+
 
         showToast(
             "حساب شما حذف شد.",
             "success"
         );
 
+
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            error
+        );
 
         hideLoading();
 
         showToast(
-            "حذف حساب انجام نشد: " +
-            (error.message || ""),
+            "حذف حساب ناموفق بود.",
             "error"
         );
-    }
-}
 
-
-/* =========================================================
-   MODALS
-   ========================================================= */
-
-function openModal(id) {
-    const modal =
-        document.getElementById(id);
-
-    if (!modal) {
-        return;
     }
 
-    modal.classList.remove(
-        "hidden"
-    );
-}
-
-function closeModal(id) {
-    const modal =
-        document.getElementById(id);
-
-    if (!modal) {
-        return;
-    }
-
-    modal.classList.add(
-        "hidden"
-    );
-}
-
-function closeAllModals() {
-    $all(".modal").forEach(
-        modal => {
-            modal.classList.add(
-                "hidden"
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   PROFILE MODAL
-   ========================================================= */
-
-function openProfileModal() {
-    if (!currentUser) {
-        return;
-    }
-
-    updateProfileUI();
-
-    openModal(
-        "profileModal"
-    );
 }
 
 
@@ -2454,165 +2764,48 @@ function openProfileModal() {
    SETTINGS
    ========================================================= */
 
-function openSettings() {
-    applyStoredSettings();
+function loadSettings() {
 
-    openModal(
-        "settingsModal"
-    );
-}
-
-
-/* =========================================================
-   CHAT INFO
-   ========================================================= */
-
-function openChatInfo() {
-    if (!currentChat) {
-        return;
-    }
-
-    const user =
-        getOtherMember(
-            currentChat
-        );
-
-    if (!user) {
-        return;
-    }
-
-    const avatar =
-        $("#chatInfoAvatar");
-
-    const name =
-        $("#chatInfoName");
-
-    const status =
-        $("#chatInfoStatus");
-
-    const id =
-        $("#chatInfoId");
-
-    if (avatar) {
-        avatar.textContent =
-            user.deleted
-                ? "👻"
-                : getInitial(
-                      user.name
-                  );
-    }
-
-    if (name) {
-        name.textContent =
-            user.deleted
-                ? "حساب حذف‌شده"
-                : user.name;
-    }
-
-    if (status) {
-        status.textContent =
-            user.deleted
-                ? "حساب حذف شده"
-                : currentChat.locked
-                    ? "گفتگو قفل شده"
-                    : "در دسترس";
-    }
-
-    if (id) {
-        id.textContent =
-            currentChat.id;
-    }
-
-    openModal(
-        "chatInfoModal"
-    );
-}
-
-
-/* =========================================================
-   THEME
-   ========================================================= */
-
-function applyTheme(
-    theme
-) {
-    const body =
-        document.body;
-
-    if (!body) return;
-
-    if (theme === "dark") {
-        body.classList.add(
-            "dark-mode"
-        );
-
-        body.classList.remove(
-            "light-mode"
-        );
-
-        return;
-    }
-
-    if (theme === "light") {
-        body.classList.add(
-            "light-mode"
-        );
-
-        body.classList.remove(
-            "dark-mode"
-        );
-
-        return;
-    }
-
-    if (theme === "system") {
-        const dark =
-            window.matchMedia &&
-            window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            ).matches;
-
-        body.classList.toggle(
-            "dark-mode",
-            dark
-        );
-
-        body.classList.toggle(
-            "light-mode",
-            !dark
-        );
-    }
-}
-
-function applyFontSize(
-    size
-) {
-    const body =
-        document.body;
-
-    if (!body) return;
-
-    body.classList.remove(
-        "font-small",
-        "font-medium",
-        "font-large"
-    );
-
-    body.classList.add(
-        `font-${size || "medium"}`
-    );
-}
-
-function applyStoredSettings() {
     const theme =
         localStorage.getItem(
             THEME_KEY
-        ) || "system";
+        ) ||
+        "light";
+
 
     const font =
         localStorage.getItem(
             FONT_KEY
-        ) || "medium";
+        ) ||
+        "normal";
+
+
+    const themeSelect =
+        $("#themeSelect");
+
+    const fontSelect =
+        $("#fontSizeSelect");
+
+
+    if (
+        themeSelect
+    ) {
+
+        themeSelect.value =
+            theme;
+
+    }
+
+
+    if (
+        fontSelect
+    ) {
+
+        fontSelect.value =
+            font;
+
+    }
+
 
     applyTheme(
         theme
@@ -2622,104 +2815,117 @@ function applyStoredSettings() {
         font
     );
 
-    const themeSelect =
-        $("#themeSelect");
-
-    const fontSelect =
-        $("#fontSizeSelect");
-
-    if (themeSelect) {
-        themeSelect.value =
-            theme;
-    }
-
-    if (fontSelect) {
-        fontSelect.value =
-            font;
-    }
 }
 
 
-/* =========================================================
-   TABS
-   ========================================================= */
+function applyTheme(
+    theme
+) {
 
-function switchTab(type) {
-    currentTab =
-        type || "private";
-
-    $all(
-        ".chat-tab"
-    ).forEach(button => {
-        button.classList.toggle(
-            "active",
-            button.dataset.type ===
-                currentTab
+    document.documentElement
+        .setAttribute(
+            "data-theme",
+            theme
         );
-    });
+
+
+    localStorage.setItem(
+        THEME_KEY,
+        theme
+    );
+
 
     if (
-        currentTab !==
-        "private"
+        theme === "dark"
     ) {
-        renderChatList([]);
 
-        showToast(
-            "گروه‌ها و کانال‌ها در نسخه بعدی فعال می‌شوند.",
-            "info"
-        );
+        document.body.style.background =
+            "#10151c";
 
-        return;
+        document.body.style.color =
+            "#f1f5f9";
+
+    } else {
+
+        document.body.style.background =
+            "";
+
+        document.body.style.color =
+            "";
+
     }
 
-    loadChats();
+}
+
+
+function applyFontSize(
+    size
+) {
+
+    let value =
+        "16px";
+
+
+    if (
+        size === "small"
+    ) {
+
+        value =
+            "14px";
+
+    } else if (
+        size === "large"
+    ) {
+
+        value =
+            "18px";
+
+    }
+
+
+    document.documentElement.style
+        .setProperty(
+            "--goftino-font-size",
+            value
+        );
+
+
+    localStorage.setItem(
+        FONT_KEY,
+        size
+    );
+
 }
 
 
 /* =========================================================
-   MOBILE SIDEBAR
+   MOBILE
    ========================================================= */
 
-function openSidebar() {
-    const sidebar =
-        $("#sidebar");
+function backToSidebar() {
 
-    if (!sidebar) return;
+    $("#sidebar")
+        ?.classList.remove(
+            "mobileHidden"
+        );
 
-    sidebar.classList.add(
-        "mobile-open"
-    );
-}
+    $("#mainArea")
+        ?.classList.add(
+            "mobileHidden"
+        );
 
-function closeSidebar() {
-    const sidebar =
-        $("#sidebar");
-
-    if (!sidebar) return;
-
-    sidebar.classList.remove(
-        "mobile-open"
-    );
 }
 
 
-/* =========================================================
-   TEXTAREA
-   ========================================================= */
+if (
+    window.innerWidth <= 750
+) {
 
-function autoResizeTextarea() {
-    const input =
-        $("#messageInput");
+    $("#mainArea")
+        ?.classList.add(
+            "mobileHidden"
+        );
 
-    if (!input) return;
-
-    input.style.height = "auto";
-
-    input.style.height =
-        Math.min(
-            input.scrollHeight,
-            150
-        ) + "px";
 }
 
 
@@ -2727,32 +2933,12 @@ function autoResizeTextarea() {
    FILE
    ========================================================= */
 
-function chooseFile() {
-    const input =
-        $("#fileInput");
-
-    if (!input) return;
-
-    input.click();
-}
-
-function handleFileSelect(event) {
-    const files =
-        event.target.files;
-
-    if (
-        !files ||
-        !files.length
-    ) {
-        return;
-    }
+function handleFile() {
 
     showToast(
-        "ارسال فایل در این نسخه فعال نشده است.",
-        "info"
+        "ارسال فایل در این نسخه فعال نشده است."
     );
 
-    event.target.value = "";
 }
 
 
@@ -2761,769 +2947,626 @@ function handleFileSelect(event) {
    ========================================================= */
 
 function startPolling() {
+
     stopPolling();
 
-    if (!currentChat) {
-        return;
-    }
 
     pollTimer =
         setInterval(
             async () => {
-                await pollCurrentChat();
+
+                if (
+                    isPolling ||
+                    !currentUser
+                ) {
+                    return;
+                }
+
+
+                isPolling =
+                    true;
+
+
+                try {
+
+                    usersCache =
+                        await getUsers();
+
+
+                    chatsCache =
+                        await getChats();
+
+
+                    renderChatList();
+
+
+                    if (
+                        currentChat
+                    ) {
+
+                        const latest =
+                            chatsCache.find(
+                                chat =>
+                                    chat.id ===
+                                    currentChat.id
+                            );
+
+
+                        if (
+                            latest
+                        ) {
+
+                            currentChat =
+                                latest;
+
+                            await renderMessages();
+
+                        }
+
+                    }
+
+                } catch (
+                    error
+                ) {
+
+                    console.warn(
+                        "Polling:",
+                        error
+                    );
+
+                }
+
+
+                isPolling =
+                    false;
+
+
             },
             POLL_INTERVAL
         );
+
 }
 
+
 function stopPolling() {
-    if (pollTimer) {
+
+    if (
+        pollTimer
+    ) {
+
         clearInterval(
             pollTimer
         );
 
-        pollTimer = null;
-    }
-}
+        pollTimer =
+            null;
 
-async function pollCurrentChat() {
-    if (
-        polling ||
-        !currentUser ||
-        !currentChat
-    ) {
-        return;
     }
 
-    polling = true;
-
-    try {
-        const latestChats =
-            await getChats();
-
-        chatsCache =
-            latestChats;
-
-        const updatedChat =
-            chatsCache.find(
-                chat =>
-                    chat.id ===
-                    currentChat.id
-            );
-
-        if (updatedChat) {
-            currentChat =
-                updatedChat;
-
-            renderChatHeader(
-                updatedChat
-            );
-        }
-
-        const messages =
-            await getMessages(
-                currentChat.id
-            );
-
-        renderMessages(
-            messages
-        );
-
-        await loadChats();
-
-    } catch (error) {
-        console.warn(
-            "Polling error:",
-            error
-        );
-    } finally {
-        polling = false;
-    }
 }
 
 
 /* =========================================================
-   RESTORE SESSION
-   ========================================================= */
-
-async function restoreSession() {
-    const userId =
-        getSession();
-
-    if (!userId) {
-        return false;
-    }
-
-    usersCache =
-        await getUsers();
-
-    const user =
-        findUserById(
-            userId
-        );
-
-    if (!user) {
-        clearSession();
-        return false;
-    }
-
-    if (user.deleted) {
-        clearSession();
-        return false;
-    }
-
-    currentUser =
-        user;
-
-    showAppPage();
-
-    await loadChats();
-
-    return true;
-}
-
-
-/* =========================================================
-   DATABASE INITIALIZATION
+   INITIALIZATION
    ========================================================= */
 
 async function initializeApp() {
-    try {
-        showLoading(
-            "در حال اتصال به PrefsDB..."
+
+    showLoading(
+        "در حال بارگذاری گفتینو..."
+    );
+
+
+    /*
+        اگر PrefsDB لود نشده باشد،
+        خطای واضح نمایش داده می‌شود.
+    */
+
+    if (
+        !prefsAvailable()
+    ) {
+
+        hideLoading();
+
+        showAuthPage();
+
+        showToast(
+            "خطا در اتصال به PrefsDB. فایل prefs.us.js بارگذاری نشده است.",
+            "error"
         );
 
-        if (!prefsAvailable()) {
-            throw new Error(
-                "PrefsDB بارگذاری نشده است. فایل index.html را بررسی کنید."
-            );
-        }
+        console.error(
+            "PrefsDB is not available. Check https://prefs.us/prefs.us.js"
+        );
 
-        await refreshPrefsKey();
+        return;
+    }
+
+
+    try {
+
+        setLoadingText(
+            "در حال اتصال به پایگاه داده..."
+        );
+
+
+        await getPrefsToken();
+
 
         usersCache =
             await getUsers();
 
-        chatsCache =
-            await getChats();
 
-        const restored =
-            await restoreSession();
+        const session =
+            getSession();
 
-        if (!restored) {
-            showAuthPage();
+
+        if (
+            session
+        ) {
+
+            const user =
+                usersCache.find(
+                    item =>
+                        item.id ===
+                        session
+                );
+
+
+            if (
+                user &&
+                !user.deleted
+            ) {
+
+                currentUser =
+                    user;
+
+
+                chatsCache =
+                    await getChats();
+
+
+                hideLoading();
+
+                showAppPage();
+
+                renderChatList();
+
+                startPolling();
+
+                return;
+
+            }
+
+
+            clearSession();
+
         }
 
-        applyStoredSettings();
 
         hideLoading();
 
+        showAuthPage();
+
+        showLogin();
+
+
     } catch (error) {
+
         console.error(
             "Initialization error:",
             error
         );
 
-        setLoadingText(
-            "اتصال به دیتابیس انجام نشد."
+
+        hideLoading();
+
+        showAuthPage();
+
+
+        showToast(
+            "خطا در اتصال به PrefsDB: " +
+            error.message,
+            "error"
         );
 
-        setTimeout(() => {
-            hideLoading();
-
-            showAuthPage();
-
-            showToast(
-                "خطا در اتصال به PrefsDB: " +
-                (error.message || ""),
-                "error"
-            );
-        }, 800);
     }
+
 }
 
 
 /* =========================================================
-   EVENT LISTENERS
-   ========================================================= */
-
-function setupEvents() {
-
-    /* -------------------------
-       Login
-    ------------------------- */
-
-    const loginForm =
-        $("#loginForm");
-
-    if (loginForm) {
-        loginForm.addEventListener(
-            "submit",
-            async event => {
-                event.preventDefault();
-
-                await loginUser();
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Register
-    ------------------------- */
-
-    const registerForm =
-        $("#registerForm");
-
-    if (registerForm) {
-        registerForm.addEventListener(
-            "submit",
-            async event => {
-                event.preventDefault();
-
-                await registerUser();
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Login/Register switch
-    ------------------------- */
-
-    const showRegister =
-        $("#showRegister");
-
-    if (showRegister) {
-        showRegister.addEventListener(
-            "click",
-            () => {
-                $("#loginBox")
-                    ?.classList.add(
-                        "hidden"
-                    );
-
-                $("#registerBox")
-                    ?.classList.remove(
-                        "hidden"
-                    );
-            }
-        );
-    }
-
-
-    const showLogin =
-        $("#showLogin");
-
-    if (showLogin) {
-        showLogin.addEventListener(
-            "click",
-            () => {
-                $("#registerBox")
-                    ?.classList.add(
-                        "hidden"
-                    );
-
-                $("#loginBox")
-                    ?.classList.remove(
-                        "hidden"
-                    );
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Profile
-    ------------------------- */
-
-    const profileButton =
-        $("#profileButton");
-
-    if (profileButton) {
-        profileButton.addEventListener(
-            "click",
-            openProfileModal
-        );
-    }
-
-
-    /* -------------------------
-       Settings
-    ------------------------- */
-
-    const settingsButton =
-        $("#settingsButton");
-
-    if (settingsButton) {
-        settingsButton.addEventListener(
-            "click",
-            openSettings
-        );
-    }
-
-
-    /* -------------------------
-       Logout
-    ------------------------- */
-
-    const logoutButton =
-        $("#logoutButton");
-
-    if (logoutButton) {
-        logoutButton.addEventListener(
-            "click",
-            logoutUser
-        );
-    }
-
-
-    /* -------------------------
-       Delete account
-    ------------------------- */
-
-    const deleteAccountButton =
-        $("#deleteAccountButton");
-
-    if (deleteAccountButton) {
-        deleteAccountButton.addEventListener(
-            "click",
-            () => {
-                openModal(
-                    "deleteAccountModal"
-                );
-            }
-        );
-    }
-
-
-    const confirmDelete =
-        $("#confirmDeleteAccount");
-
-    if (confirmDelete) {
-        confirmDelete.addEventListener(
-            "click",
-            async () => {
-                await deleteAccount();
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Chat info
-    ------------------------- */
-
-    const chatInfoButton =
-        $("#chatInfoButton");
-
-    if (chatInfoButton) {
-        chatInfoButton.addEventListener(
-            "click",
-            openChatInfo
-        );
-    }
-
-
-    /* -------------------------
-       Send message
-    ------------------------- */
-
-    const sendButton =
-        $("#sendMessageButton");
-
-    if (sendButton) {
-        sendButton.addEventListener(
-            "click",
-            async () => {
-                await sendMessage();
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Message enter
-    ------------------------- */
-
-    const messageInput =
-        $("#messageInput");
-
-    if (messageInput) {
-
-        messageInput.addEventListener(
-            "input",
-            autoResizeTextarea
-        );
-
-        messageInput.addEventListener(
-            "keydown",
-            async event => {
-
-                if (
-                    event.key ===
-                    "Enter" &&
-                    !event.shiftKey
-                ) {
-                    event.preventDefault();
-
-                    await sendMessage();
-                }
-
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Search
-    ------------------------- */
-
-    const userSearch =
-        $("#userSearch");
-
-    if (userSearch) {
-
-        userSearch.addEventListener(
-            "focus",
-            openSearch
-        );
-
-        userSearch.addEventListener(
-            "input",
-            event => {
-
-                clearTimeout(
-                    searchTimeout
-                );
-
-                const value =
-                    event.target.value;
-
-                searchTimeout =
-                    setTimeout(
-                        () => {
-                            searchUsers(
-                                value
-                            );
-                        },
-                        250
-                    );
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Close search
-    ------------------------- */
-
-    const closeSearchButton =
-        $("#closeSearch");
-
-    if (closeSearchButton) {
-        closeSearchButton.addEventListener(
-            "click",
-            closeSearch
-        );
-    }
-
-
-    /* -------------------------
-       Search overlay
-    ------------------------- */
-
-    const searchOverlay =
-        $("#searchOverlay");
-
-    if (searchOverlay) {
-        searchOverlay.addEventListener(
-            "click",
-            event => {
-                if (
-                    event.target ===
-                    searchOverlay
-                ) {
-                    closeSearch();
-                }
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Tabs
-    ------------------------- */
-
-    $all(
-        ".chat-tab"
-    ).forEach(button => {
-        button.addEventListener(
-            "click",
-            () => {
-                switchTab(
-                    button.dataset.type
-                );
-            }
-        );
-    });
-
-
-    /* -------------------------
-       Mobile sidebar
-    ------------------------- */
-
-    const openSidebarButton =
-        $("#openSidebar");
-
-    if (openSidebarButton) {
-        openSidebarButton.addEventListener(
-            "click",
-            openSidebar
-        );
-    }
-
-
-    const closeSidebarButton =
-        $("#closeSidebar");
-
-    if (closeSidebarButton) {
-        closeSidebarButton.addEventListener(
-            "click",
-            closeSidebar
-        );
-    }
-
-
-    /* -------------------------
-       File
-    ------------------------- */
-
-    const fileButton =
-        $("#fileButton");
-
-    if (fileButton) {
-        fileButton.addEventListener(
-            "click",
-            chooseFile
-        );
-    }
-
-
-    const fileInput =
-        $("#fileInput");
-
-    if (fileInput) {
-        fileInput.addEventListener(
-            "change",
-            handleFileSelect
-        );
-    }
-
-
-    /* -------------------------
-       Theme
-    ------------------------- */
-
-    const themeSelect =
-        $("#themeSelect");
-
-    if (themeSelect) {
-        themeSelect.addEventListener(
-            "change",
-            event => {
-
-                const value =
-                    event.target.value;
-
-                localStorage.setItem(
-                    THEME_KEY,
-                    value
-                );
-
-                applyTheme(
-                    value
-                );
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Font
-    ------------------------- */
-
-    const fontSelect =
-        $("#fontSizeSelect");
-
-    if (fontSelect) {
-        fontSelect.addEventListener(
-            "change",
-            event => {
-
-                const value =
-                    event.target.value;
-
-                localStorage.setItem(
-                    FONT_KEY,
-                    value
-                );
-
-                applyFontSize(
-                    value
-                );
-            }
-        );
-    }
-
-
-    /* -------------------------
-       Close modal buttons
-    ------------------------- */
-
-    $all(
-        "[data-close]"
-    ).forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-                closeModal(
-                    button.dataset.close
-                );
-            }
-        );
-
-    });
-
-
-    /* -------------------------
-       Modal overlays
-    ------------------------- */
-
-    $all(
-        ".modal"
-    ).forEach(modal => {
-
-        const overlay =
-            modal.querySelector(
-                ".modal-overlay"
-            );
-
-        if (overlay) {
-
-            overlay.addEventListener(
-                "click",
-                () => {
-                    modal.classList.add(
-                        "hidden"
-                    );
-                }
-            );
-
-        }
-
-    });
-
-
-    /* -------------------------
-       Escape
-    ------------------------- */
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key ===
-                "Escape"
-            ) {
-                closeSearch();
-                closeAllModals();
-            }
-
-        }
-    );
-
-
-    /* -------------------------
-       Online/offline
-    ------------------------- */
-
-    window.addEventListener(
-        "online",
-        () => {
-            showToast(
-                "اتصال اینترنت برقرار شد.",
-                "success"
-            );
-        }
-    );
-
-    window.addEventListener(
-        "offline",
-        () => {
-            showToast(
-                "اتصال اینترنت قطع شد.",
-                "warning"
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   SYSTEM THEME
-   ========================================================= */
-
-if (
-    window.matchMedia
-) {
-    const media =
-        window.matchMedia(
-            "(prefers-color-scheme: dark)"
-        );
-
-    if (
-        typeof media.addEventListener ===
-        "function"
-    ) {
-        media.addEventListener(
-            "change",
-            () => {
-
-                const theme =
-                    localStorage.getItem(
-                        THEME_KEY
-                    ) || "system";
-
-                if (
-                    theme ===
-                    "system"
-                ) {
-                    applyTheme(
-                        "system"
-                    );
-                }
-            }
-        );
-    }
-}
-
-
-/* =========================================================
-   START
+   EVENTS
    ========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    async () => {
+    () => {
 
-        setupEvents();
 
-        applyStoredSettings();
+        /* Auth */
 
-        await initializeApp();
+        $("#showRegisterButton")
+            ?.addEventListener(
+                "click",
+                showRegister
+            );
+
+
+        $("#showLoginButton")
+            ?.addEventListener(
+                "click",
+                showLogin
+            );
+
+
+        $("#loginForm")
+            ?.addEventListener(
+                "submit",
+                event => {
+
+                    event.preventDefault();
+
+                    loginUser();
+
+                }
+            );
+
+
+        $("#registerForm")
+            ?.addEventListener(
+                "submit",
+                event => {
+
+                    event.preventDefault();
+
+                    registerUser();
+
+                }
+            );
+
+
+        /* Profile */
+
+        $("#profileButton")
+            ?.addEventListener(
+                "click",
+                () => {
+
+                    updateProfileUI();
+
+                    openModal(
+                        "profileModal"
+                    );
+
+                }
+            );
+
+
+        $("#logoutButton")
+            ?.addEventListener(
+                "click",
+                logout
+            );
+
+
+        /* Settings */
+
+        $("#settingsButton")
+            ?.addEventListener(
+                "click",
+                () => {
+
+                    loadSettings();
+
+                    openModal(
+                        "settingsModal"
+                    );
+
+                }
+            );
+
+
+        $("#themeSelect")
+            ?.addEventListener(
+                "change",
+                event => {
+
+                    applyTheme(
+                        event.target.value
+                    );
+
+                }
+            );
+
+
+        $("#fontSizeSelect")
+            ?.addEventListener(
+                "change",
+                event => {
+
+                    applyFontSize(
+                        event.target.value
+                    );
+
+                }
+            );
+
+
+        $("#deleteAccountButton")
+            ?.addEventListener(
+                "click",
+                () => {
+
+                    openModal(
+                        "deleteAccountModal"
+                    );
+
+                }
+            );
+
+
+        $("#confirmDeleteAccount")
+            ?.addEventListener(
+                "click",
+                deleteAccount
+            );
+
+
+        /* Search */
+
+        $("#userSearch")
+            ?.addEventListener(
+                "input",
+                event => {
+
+                    searchUsers(
+                        event.target.value
+                    );
+
+                }
+            );
+
+
+        /* Tabs */
+
+        $all(
+            ".tabButton"
+        ).forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        $all(
+                            ".tabButton"
+                        ).forEach(
+                            item =>
+                                item.classList.remove(
+                                    "active"
+                                )
+                        );
+
+
+                        button.classList.add(
+                            "active"
+                        );
+
+
+                        currentTab =
+                            button.dataset.tab;
+
+
+                        renderChatList();
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* Messages */
+
+        $("#sendMessageButton")
+            ?.addEventListener(
+                "click",
+                sendMessage
+            );
+
+
+        $("#messageInput")
+            ?.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key ===
+                            "Enter" &&
+                        !event.shiftKey
+                    ) {
+
+                        event.preventDefault();
+
+                        sendMessage();
+
+                    }
+
+                }
+            );
+
+
+        /* File */
+
+        $("#fileButton")
+            ?.addEventListener(
+                "click",
+                () => {
+
+                    $("#fileInput")
+                        ?.click();
+
+                }
+            );
+
+
+        $("#fileInput")
+            ?.addEventListener(
+                "change",
+                handleFile
+            );
+
+
+        /* Chat info */
+
+        $("#chatInfoButton")
+            ?.addEventListener(
+                "click",
+                showChatInfo
+            );
+
+
+        /* Mobile */
+
+        $("#backToSidebarButton")
+            ?.addEventListener(
+                "click",
+                backToSidebar
+            );
+
+
+        /* Close modals */
+
+        $all(
+            "[data-close-modal]"
+        ).forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        closeModal(
+                            button.dataset.closeModal
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+        $all(
+            ".modalOverlay"
+        ).forEach(
+            overlay => {
+
+                overlay.addEventListener(
+                    "click",
+                    event => {
+
+                        if (
+                            event.target ===
+                            overlay
+                        ) {
+
+                            overlay.classList.add(
+                                "hidden"
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* Close search */
+
+        document.addEventListener(
+            "click",
+            event => {
+
+                const searchBox =
+                    $(".searchBox");
+
+                const overlay =
+                    $("#searchOverlay");
+
+
+                if (
+                    overlay &&
+                    !overlay.classList.contains(
+                        "hidden"
+                    ) &&
+                    searchBox &&
+                    !searchBox.contains(
+                        event.target
+                    ) &&
+                    !overlay.contains(
+                        event.target
+                    )
+                ) {
+
+                    closeSearch();
+
+                }
+
+            }
+        );
+
+
+        loadSettings();
+
+        initializeApp();
+
+    }
+);
+
+
+/* =========================================================
+   ONLINE / OFFLINE
+   ========================================================= */
+
+window.addEventListener(
+    "online",
+    () => {
+
+        showToast(
+            "اتصال اینترنت برقرار شد.",
+            "success"
+        );
+
+    }
+);
+
+
+window.addEventListener(
+    "offline",
+    () => {
+
+        showToast(
+            "اتصال اینترنت قطع شد.",
+            "error"
+        );
+
+    }
+);
+
+
+/* =========================================================
+   BEFORE UNLOAD
+   ========================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        stopPolling();
 
     }
 );
